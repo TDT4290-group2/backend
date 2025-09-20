@@ -1,3 +1,3 @@
 namespace backend.Records;
 
-public record NoiseData(double LavgQ3, TimeOnly Time);
+public record NoiseData(Guid Id, double LavgQ3, TimeOnly Time);
