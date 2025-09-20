@@ -1,0 +1,29 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg17
+    container_name: timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+
+  # Comment out the following section if you want to use a local .NET application instead
+  dotnet_app:
+    build:
+      context: ./src/Backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=5432;Database=mydb;Username=postgres;Password=postgres"
+    container_name: dotnet_app
+    depends_on:
+      - timescaledb
+    
+
+volumes:
+  timescale_data:
