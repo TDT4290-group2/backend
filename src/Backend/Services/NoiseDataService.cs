@@ -1,7 +1,7 @@
-using backend.Records;
+using Backend.Records;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Services;
+namespace Backend.Services;
 
 public interface INoiseDataService
 {

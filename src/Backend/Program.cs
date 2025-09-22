@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using backend.Services;
+using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();

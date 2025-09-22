@@ -1,4 +1,4 @@
-namespace backend.DTOs;
+namespace Backend.DTOs;
 
 public record NoiseDataResponseDto(
     Guid Id,
