@@ -6,12 +6,12 @@ using backend.DTOs;
 namespace backend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[controller]")] 
 public class NoiseDataController : ControllerBase
 {
-    private readonly INoiseService _noiseService;
+    private readonly INoiseDataService _noiseService;
 
-    public NoiseDataController(INoiseService noiseService)
+    public NoiseDataController(INoiseDataService noiseService)
     {
         _noiseService = noiseService;
     }
@@ -33,7 +33,7 @@ public class NoiseDataController : ControllerBase
     {
         var noiseData = await _noiseService.GetNoiseDataByIdAsync(id);
         if (noiseData == null)
-        {
+        { 
             return NotFound();
         }
         return Ok(new NoiseDataResponseDto(
@@ -46,7 +46,7 @@ public class NoiseDataController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<NoiseDataResponseDto>> Create(CreateNoiseDataDto data)
     {
-        var noiseData = new NoiseData(Guid.NewGuid(), data.LavgQ3, TimeOnly.FromDateTime(DateTime.Now));
+        var noiseData = new NoiseData(Guid.NewGuid(), data.LavgQ3, data.Time);
         var createdData = await _noiseService.AddNoiseDataAsync(noiseData);
         return CreatedAtAction(nameof(GetById), new { id = createdData.Id }, new NoiseDataResponseDto(
             createdData.Id,

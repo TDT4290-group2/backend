@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;
 
-public interface INoiseService
+public interface INoiseDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
     Task<NoiseData?> GetNoiseDataByIdAsync(Guid id);
@@ -11,11 +11,11 @@ public interface INoiseService
     Task DeleteNoiseDataAsync(Guid id);
 }
 
-public class NoiseService: INoiseService
+public class NoiseDataService: INoiseDataService
 {
     private readonly AppDbContext _context;
 
-    public NoiseService(AppDbContext context)
+    public NoiseDataService(AppDbContext context)
     {
         _context = context;
     }

@@ -12,7 +12,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<INoiseService, NoiseService>();
+builder.Services.AddScoped<INoiseDataService, NoiseDataService>();
 
 var app = builder.Build();
 app.MapControllers();
@@ -27,3 +27,5 @@ app.UseHttpsRedirection();
 
 app.Run();
 
+// This is needed for integration tests
+public partial class Program { }
