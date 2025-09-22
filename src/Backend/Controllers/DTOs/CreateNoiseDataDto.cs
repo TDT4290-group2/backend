@@ -3,5 +3,6 @@ using System.Xml;
 
 namespace backend.DTOs;
 public record CreateNoiseDataDto(
-    [Required] double LavgQ3
+    [Required] double LavgQ3,
+    [Required] TimeOnly Time
 );
