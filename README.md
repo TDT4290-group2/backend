@@ -62,7 +62,7 @@ dotnet watch run
 ### Docker
 Run this command in the terminal from the root
 ```sh
-docker compose up -d
+docker compose up --build -d
 ```
 
 Then navigate to /src/Backend and run this if the **Migrations folder doesn´t exist**
@@ -86,7 +86,7 @@ dotnet ef database update
 ## Setting up docker
 Run the command under in the terminal from root:
 ```sh
-docker compose up -d
+docker compose up --build -d
 ```
 
 ## Running tests
