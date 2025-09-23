@@ -17,7 +17,7 @@ services:
       context: ./src/Backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "5063:8080"
     environment:
       ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=5432;Database=mydb;Username=postgres;Password=postgres"
     container_name: dotnet_app

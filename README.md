@@ -96,14 +96,7 @@ dotnet test
 ```
 
 ## Endpoints
-### Docker
-When your running your application though docker the endpoint starts with
-```
-http://localhost:8080
-```
-
-### Locally
-When your running you applciation locally the endpoint starts with
+The endpoint is
 ```
 http://localhost:5063
 ```
