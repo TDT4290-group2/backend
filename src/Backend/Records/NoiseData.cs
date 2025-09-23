@@ -1,3 +1,5 @@
-namespace backend.Records;
+using System.ComponentModel.DataAnnotations;
 
-public record NoiseData(double LavgQ3, TimeOnly Time);
+namespace Backend.Records;
+
+public record NoiseData([property: Key] Guid Id, double LavgQ3, TimeOnly Time);
