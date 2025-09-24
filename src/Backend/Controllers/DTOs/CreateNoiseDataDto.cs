@@ -4,5 +4,5 @@ using System.Xml;
 namespace Backend.DTOs;
 public record CreateNoiseDataDto(
     [Required] double LavgQ3,
-    [Required] TimeOnly Time
+    [Required] DateTime Time
 );

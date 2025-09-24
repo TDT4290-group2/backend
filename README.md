@@ -100,3 +100,29 @@ The endpoint is
 ```
 http://localhost:5063
 ```
+
+## Hypertables
+
+### Making a new hypertable
+After creating the migration for the new table, you have to manually add this SQL script to the migration file. It needs to be placed in the *Up* method. See an example of this in the InitialCreate.cs file.
+
+```cs
+migrationBuilder.Sql(
+    "SELECT create_hypertable('\"<TableName>\"', by_range('Time', INTERVAL '1 day'));"
+);
+```
+Change \<TableName\> to the name of your new table. It is also possible to do range partitioning on another property than *Time*, but this will likely be most used. Remember to have the range partitioning property (in this case *Time*) as a part of the primary key for the table.
+
+### Verifying the hypertable exists
+To verify that the hypertables have been set up, one can connect to the database from within the container with:
+
+```sh
+docker exec -it timescaledb psql -U postgres -d mydb
+```
+and then running
+```
+SELECT * FROM _timescaledb_catalog.hypertable;
+```
+
+Check that all the correct *table_name* entries are there for your tables
+

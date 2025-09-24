@@ -1,5 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Records;
 
-public record NoiseData([property: Key] Guid Id, double LavgQ3, TimeOnly Time);
+[PrimaryKey(nameof(Id), nameof(Time))]
+public record NoiseData(Guid Id, double LavgQ3, DateTime Time);
