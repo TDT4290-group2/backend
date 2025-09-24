@@ -89,6 +89,14 @@ Run the command under in the terminal from root:
 docker compose up --build -d
 ```
 
+## Seeding the Database with sample data
+First, place your sample data in the *seed* directory as csv-files: *NoiseData.csv*, *DustData.csv*, *VibrationData.csv*
+Then run 
+
+```sh
+docker exec -it timescaledb psql -U postgres -d mydb -f /seed/seed.sql
+```
+
 ## Running tests
 From the root directory, run 
 ```sh
