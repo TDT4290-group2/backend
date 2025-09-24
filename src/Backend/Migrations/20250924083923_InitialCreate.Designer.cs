@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250922073349_InitialCreate")]
+    [Migration("20250924083923_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace backend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("backend.Records.NoiseData", b =>
+            modelBuilder.Entity("Backend.Records.NoiseData", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,8 +33,8 @@ namespace backend.Migrations
                     b.Property<double>("LavgQ3")
                         .HasColumnType("double precision");
 
-                    b.Property<TimeOnly>("Time")
-                        .HasColumnType("time without time zone");
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

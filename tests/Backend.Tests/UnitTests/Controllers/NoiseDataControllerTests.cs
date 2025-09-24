@@ -31,7 +31,7 @@ public class NoiseControllerTests
     {
         var mockService = new Mock<INoiseDataService>();
         var guid = new Guid();
-        var time = TimeOnly.FromDateTime(DateTime.Now);
+        var time = DateTime.Now;
         var noiseData = new NoiseData(guid, 70.2, time);
         mockService.Setup(service => service.GetNoiseDataByIdAsync(guid))
                    .ReturnsAsync(noiseData);
@@ -63,7 +63,7 @@ public class NoiseControllerTests
     {
         var mockService = new Mock<INoiseDataService>();
         var guid = Guid.NewGuid();
-        var time = TimeOnly.FromDateTime(DateTime.Now);
+        var time = DateTime.Now;
         var noiseData = new NoiseData(guid, 70.2, time);
         var noiseDataDto = new NoiseDataResponseDto(guid, 70.2, time);
 
