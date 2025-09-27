@@ -36,9 +36,9 @@ DELETE FROM "VibrationData";
 
 -- Create temporary table matching ALL CSV columns
 CREATE TABLE temp_vibration_data (
-    Date TEXT,
-    ConnectedOn TEXT,
-    DisconnectedOn TEXT,
+    Date TIMESTAMP,
+    ConnectedOn TIMESTAMP,
+    DisconnectedOn TIMESTAMP,
     "Tag Vibration (m/s2)" DECIMAL,
     "Sensed Vibration (m/s2)" DECIMAL,
     TriggerTime TEXT,
@@ -77,9 +77,9 @@ COPY temp_vibration_data FROM '/seed/VibrationData.csv' DELIMITER ',' CSV HEADER
 INSERT INTO "VibrationData" ("Id", "ConnectedOn", "Exposure", "DisconnectedOn")
 SELECT 
     gen_random_uuid(),
-    TO_TIMESTAMP(ConnectedOn, 'DD-MM-YYYY"T"HH24:MI:SS"Z"'),
+    ConnectedOn,
     "Tag Exposure Points",
-    TO_TIMESTAMP(DisconnectedOn, 'DD-MM-YYYY"T"HH24:MI:SS"Z"')
+    DisconnectedOn
 FROM temp_vibration_data
 WHERE ConnectedOn IS NOT NULL AND DisconnectedOn IS NOT NULL;
 
