@@ -50,3 +50,6 @@ TestResults/
 
 # Publish output
 publish/
+
+# Csv files
+*.csv

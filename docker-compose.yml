@@ -10,6 +10,7 @@ services:
       POSTGRES_DB: mydb
     volumes:
       - timescale_data:/var/lib/postgresql/data
+      - ./seed:/seed
 
   # Comment out the following section if you want to use a local .NET application instead
   # dotnet_app:
