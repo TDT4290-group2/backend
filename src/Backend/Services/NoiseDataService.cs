@@ -1,3 +1,4 @@
+using Backend.DTOs;
 using Backend.Records;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +7,7 @@ namespace Backend.Services;
 public interface INoiseDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
-    Task<NoiseData?> GetNoiseDataByIdAsync(Guid id);
-    Task<NoiseData> AddNoiseDataAsync(NoiseData data);
-    Task DeleteNoiseDataAsync(Guid id);
+    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedNoiseDataAsync(SensorDataRequestDto request, Guid userId);
 }
 
 public class NoiseDataService: INoiseDataService
@@ -25,25 +24,50 @@ public class NoiseDataService: INoiseDataService
         return await _context.NoiseData.ToListAsync();
     }
 
-    public async Task<NoiseData?> GetNoiseDataByIdAsync(Guid id)
+    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedNoiseDataAsync(SensorDataRequestDto request, Guid userId)
     {
-        return await _context.NoiseData.FindAsync(id);
-    }
+        var materializedViewName = request.Granularity switch
+            {
+                TimeGranularity.Minute => "noise_data_minutely",
+                TimeGranularity.Hour => "noise_data_hourly",
+                TimeGranularity.Day => "noise_data_daily",
+                _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
+            };
 
-    public async Task<NoiseData> AddNoiseDataAsync(NoiseData data)
-    {
-        _context.NoiseData.Add(data);
-        await _context.SaveChangesAsync();
-        return data;
-    }
+        var aggregateColumnName = request.Function switch
+            {
+                AggregationFunction.Avg => "avg_noise",
+                AggregationFunction.Sum => "sum_noise",
+                AggregationFunction.Min => "min_noise",
+                AggregationFunction.Max => "max_noise",
+                AggregationFunction.Count => "sample_count",
+                _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
+            };
 
-    public async Task DeleteNoiseDataAsync(Guid id)
-    {
-        var data = await _context.NoiseData.FindAsync(id);
-        if (data != null)
+        var sql = $@"
+            SELECT 
+                bucket as Time,
+                {aggregateColumnName} as Value
+            FROM {materializedViewName}
+            WHERE bucket >= {{0}} AND bucket <= {{1}}
+            ORDER BY bucket";
+
+        try
         {
-            _context.NoiseData.Remove(data);
-            await _context.SaveChangesAsync();
+            var result = await _context.Database
+                .SqlQueryRaw<SensorDataResponseDto>(sql, request.StartTime, request.EndTime)
+                .ToListAsync();
+
+            if (!result.Any())
+            {
+                return new List<SensorDataResponseDto>();
+            }
+
+            return result;
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Sequence contains no elements"))
+        {
+            return new List<SensorDataResponseDto>();
         }
     }
 }
