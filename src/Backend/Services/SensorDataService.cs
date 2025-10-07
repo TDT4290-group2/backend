@@ -1,20 +1,21 @@
 using Backend.DTOs;
 using Backend.Records;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Services;
 
-public interface INoiseDataService
+public interface ISensorDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
-    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedNoiseDataAsync(SensorDataRequestDto request, Guid userId);
+    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(SensorDataRequestDto request, Guid userId, string dataType);
 }
 
-public class NoiseDataService: INoiseDataService
+public class SensorDataService: ISensorDataService
 {
     private readonly AppDbContext _context;
 
-    public NoiseDataService(AppDbContext context)
+    public SensorDataService(AppDbContext context)
     {
         _context = context;
     }
@@ -24,25 +25,31 @@ public class NoiseDataService: INoiseDataService
         return await _context.NoiseData.ToListAsync();
     }
 
-    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedNoiseDataAsync(SensorDataRequestDto request, Guid userId)
+    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(SensorDataRequestDto request, Guid userId, string dataType)
     {
+        var dataType_split = dataType + "_data";
+
         var materializedViewName = request.Granularity switch
             {
-                TimeGranularity.Minute => "noise_data_minutely",
-                TimeGranularity.Hour => "noise_data_hourly",
-                TimeGranularity.Day => "noise_data_daily",
+                TimeGranularity.Minute => dataType_split + "_minutely",
+                TimeGranularity.Hour => dataType_split + "_hourly",
+                TimeGranularity.Day => dataType_split + "_daily",
                 _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
             };
-
         var aggregateColumnName = request.Function switch
             {
-                AggregationFunction.Avg => "avg_noise",
-                AggregationFunction.Sum => "sum_noise",
-                AggregationFunction.Min => "min_noise",
-                AggregationFunction.Max => "max_noise",
+                AggregationFunction.Avg => "avg_" + dataType,
+                AggregationFunction.Sum => "sum_" + dataType,
+                AggregationFunction.Min => "min_" + dataType,
+                AggregationFunction.Max => "max_" + dataType,
                 AggregationFunction.Count => "sample_count",
                 _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
             };
+
+        if (!request.Fields.IsNullOrEmpty())
+        {
+            aggregateColumnName += "_" + request.Fields[0];
+        }
 
         var sql = $@"
             SELECT 

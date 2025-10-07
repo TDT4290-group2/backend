@@ -9,17 +9,17 @@ namespace Backend.Controllers;
 [Route("api/sensor")]
 public class SensorDataController : ControllerBase
 {
-    private readonly INoiseDataService _noiseDataService;
+    private readonly ISensorDataService _sensorDataService;
 
-    public SensorDataController(INoiseDataService noiseDataService)
+    public SensorDataController(ISensorDataService sensorDataService)
     {
-        _noiseDataService = noiseDataService;
+        _sensorDataService = sensorDataService;
     }
 
     [HttpGet("noisedata/all")]
     public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAllNoiseData()
     {
-        var noiseData = await _noiseDataService.GetAllNoiseDataAsync();
+        var noiseData = await _sensorDataService.GetAllNoiseDataAsync();
         var response = noiseData.Select(nd => new SensorDataResponseDto
         {
             Time = nd.Time,
@@ -28,10 +28,10 @@ public class SensorDataController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("noisedata/{userId}")]
-    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedNoiseData([FromBody] SensorDataRequestDto request, [FromRoute] Guid userId)
+    [HttpGet("{dataType}/{userId}")]
+    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedNoiseData([FromBody] SensorDataRequestDto request, [FromRoute] Guid userId, [FromRoute] string dataType)
     {
-        var response = await _noiseDataService.GetAggregatedNoiseDataAsync(request, userId);
+        var response = await _sensorDataService.GetAggregatedDataAsync(request, userId, dataType);
         return Ok(response);
     }
 }

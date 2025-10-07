@@ -12,7 +12,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<INoiseDataService, NoiseDataService>();
+builder.Services.AddScoped<ISensorDataService, SensorDataService>();
 
 var app = builder.Build();
 app.MapControllers();
