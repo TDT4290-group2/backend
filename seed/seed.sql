@@ -21,7 +21,7 @@ CREATE TABLE temp_noise_data (
 );
 
 -- Import to temp table
-COPY temp_noise_data FROM '/seed/NoiseData.csv' DELIMITER ',' CSV HEADER;
+COPY temp_noise_data FROM ' NoiseData.csv' DELIMITER ',' CSV HEADER;
 
 INSERT INTO "NoiseData" ("Id", "Time", "LavgQ3")
 SELECT gen_random_uuid(), Time, "LAVG (Q3)"
@@ -197,11 +197,11 @@ ORDER BY bucket;
 CREATE MATERIALIZED VIEW vibration_data_minutely AS
 SELECT 
     time_bucket('1 minute', "ConnectedOn") AS bucket,
-    AVG("Exposure") AS avg_exposure,
-    SUM("Exposure") AS sum_exposure,
+    AVG("Exposure") AS avg_vibration,
+    SUM("Exposure") AS sum_vibration,
     COUNT(*) AS sample_count,
-    MIN("Exposure") AS min_exposure,
-    MAX("Exposure") AS max_exposure
+    MIN("Exposure") AS min_vibration,
+    MAX("Exposure") AS max_vibration
 FROM "VibrationData"
 WHERE "ConnectedOn" IS NOT NULL
 GROUP BY bucket
@@ -210,11 +210,11 @@ ORDER BY bucket;
 CREATE MATERIALIZED VIEW vibration_data_hourly AS
 SELECT 
     time_bucket('1 hour', "ConnectedOn") AS bucket,
-    AVG("Exposure") AS avg_exposure,
-    SUM("Exposure") AS sum_exposure,
+    AVG("Exposure") AS avg_vibration,
+    SUM("Exposure") AS sum_vibration,
     COUNT(*) AS sample_count,
-    MIN("Exposure") AS min_exposure,
-    MAX("Exposure") AS max_exposure
+    MIN("Exposure") AS min_vibration,
+    MAX("Exposure") AS max_vibration
 FROM "VibrationData"
 WHERE "ConnectedOn" IS NOT NULL
 GROUP BY bucket
@@ -223,11 +223,11 @@ ORDER BY bucket;
 CREATE MATERIALIZED VIEW vibration_data_daily AS
 SELECT 
     time_bucket('1 day', "ConnectedOn") AS bucket,
-    AVG("Exposure") AS avg_exposure,
-    SUM("Exposure") AS sum_exposure,
+    AVG("Exposure") AS avg_vibration,
+    SUM("Exposure") AS sum_vibration,
     COUNT(*) AS sample_count,
-    MIN("Exposure") AS min_exposure,
-    MAX("Exposure") AS max_exposure
+    MIN("Exposure") AS min_vibration,
+    MAX("Exposure") AS max_vibration
 FROM "VibrationData"
 WHERE "ConnectedOn" IS NOT NULL
 GROUP BY bucket
@@ -239,14 +239,14 @@ ORDER BY bucket;
 CREATE MATERIALIZED VIEW dust_data_minutely AS
 SELECT 
     time_bucket('1 minute', "Time") AS bucket,
-    AVG("PM1S") AS avg_pm1_stel,
-    AVG("PM25S") AS avg_pm25_stel,
-    AVG("PM4S") AS avg_pm4_stel,
-    AVG("PM10S") AS avg_pm10_stel,
-    SUM("PM1S") AS sum_pm1_stel,
-    SUM("PM25S") AS sum_pm25_stel,
-    SUM("PM4S") AS sum_pm4_stel,
-    SUM("PM10S") AS sum_pm10_stel,
+    AVG("PM1S") AS avg_dust_pm1_stel,
+    AVG("PM25S") AS avg_dust_pm25_stel,
+    AVG("PM4S") AS avg_dust_pm4_stel,
+    AVG("PM10S") AS avg_dust_pm10_stel,
+    SUM("PM1S") AS sum_dust_pm1_stel,
+    SUM("PM25S") AS sum_dust_pm25_stel,
+    SUM("PM4S") AS sum_dust_pm4_stel,
+    SUM("PM10S") AS sum_dust_pm10_stel,
     COUNT(*) AS sample_count
 FROM "DustData"
 GROUP BY bucket
@@ -255,14 +255,14 @@ ORDER BY bucket;
 CREATE MATERIALIZED VIEW dust_data_hourly AS
 SELECT 
     time_bucket('1 hour', "Time") AS bucket,
-    AVG("PM1S") AS avg_pm1_stel,
-    AVG("PM25S") AS avg_pm25_stel,
-    AVG("PM4S") AS avg_pm4_stel,
-    AVG("PM10S") AS avg_pm10_stel,
-    SUM("PM1S") AS sum_pm1_stel,
-    SUM("PM25S") AS sum_pm25_stel,
-    SUM("PM4S") AS sum_pm4_stel,
-    SUM("PM10S") AS sum_pm10_stel,
+    AVG("PM1S") AS avg_dust_pm1_stel,
+    AVG("PM25S") AS avg_dust_pm25_stel,
+    AVG("PM4S") AS avg_dust_pm4_stel,
+    AVG("PM10S") AS avg_dust_pm10_stel,
+    SUM("PM1S") AS sum_dust_pm1_stel,
+    SUM("PM25S") AS sum_dust_pm25_stel,
+    SUM("PM4S") AS sum_dust_pm4_stel,
+    SUM("PM10S") AS sum_dust_pm10_stel,
     COUNT(*) AS sample_count
 FROM "DustData"
 GROUP BY bucket
@@ -271,14 +271,14 @@ ORDER BY bucket;
 CREATE MATERIALIZED VIEW dust_data_daily AS
 SELECT 
     time_bucket('1 day', "Time") AS bucket,
-    AVG("PM1S") AS avg_pm1_stel,
-    AVG("PM25S") AS avg_pm25_stel,
-    AVG("PM4S") AS avg_pm4_stel,
-    AVG("PM10S") AS avg_pm10_stel,
-    SUM("PM1S") AS sum_pm1_stel,
-    SUM("PM25S") AS sum_pm25_stel,
-    SUM("PM4S") AS sum_pm4_stel,
-    SUM("PM10S") AS sum_pm10_stel,
+    AVG("PM1S") AS avg_dust_pm1_stel,
+    AVG("PM25S") AS avg_dust_pm25_stel,
+    AVG("PM4S") AS avg_dust_pm4_stel,
+    AVG("PM10S") AS avg_dust_pm10_stel,
+    SUM("PM1S") AS sum_dust_pm1_stel,
+    SUM("PM25S") AS sum_dust_pm25_stel,
+    SUM("PM4S") AS sum_dust_pm4_stel,
+    SUM("PM10S") AS sum_dust_pm10_stel,
     COUNT(*) AS sample_count
 FROM "DustData"
 GROUP BY bucket
