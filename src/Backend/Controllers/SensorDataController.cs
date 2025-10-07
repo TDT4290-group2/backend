@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Backend.Records;
 using Backend.Services;
 using Backend.DTOs;
-using Azure;
 
 namespace Backend.Controllers;
 
@@ -32,7 +30,7 @@ public class SensorDataController : ControllerBase
     }
 
     [HttpGet("{dataType}/{userId}")]
-    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedNoiseData([FromBody] SensorDataRequestDto request, [FromRoute] Guid userId, [FromRoute] string dataType)
+    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedData([FromBody] SensorDataRequestDto request, [FromRoute] Guid userId, [FromRoute] string dataType)
     {
         _requestContext.Initialize(request, userId, dataType);
         var response = await _sensorDataService.GetAggregatedDataAsync(_requestContext);
