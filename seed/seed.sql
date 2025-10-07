@@ -21,7 +21,7 @@ CREATE TABLE temp_noise_data (
 );
 
 -- Import to temp table
-COPY temp_noise_data FROM ' NoiseData.csv' DELIMITER ',' CSV HEADER;
+COPY temp_noise_data FROM '/seed/NoiseData.csv' DELIMITER ',' CSV HEADER;
 
 INSERT INTO "NoiseData" ("Id", "Time", "LavgQ3")
 SELECT gen_random_uuid(), Time, "LAVG (Q3)"

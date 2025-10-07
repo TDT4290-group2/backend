@@ -8,10 +8,10 @@ namespace Backend.Services;
 public interface ISensorDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
-    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(SensorDataRequestDto request, Guid userId, string dataType);
+    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext);
 }
 
-public class SensorDataService: ISensorDataService
+public class SensorDataService : ISensorDataService
 {
     private readonly AppDbContext _context;
 
@@ -25,26 +25,28 @@ public class SensorDataService: ISensorDataService
         return await _context.NoiseData.ToListAsync();
     }
 
-    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(SensorDataRequestDto request, Guid userId, string dataType)
+    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext)
     {
+        var request = requestContext.Request;
+        var dataType = requestContext.DataType;
         var dataType_split = dataType + "_data";
 
         var materializedViewName = request.Granularity switch
-            {
-                TimeGranularity.Minute => dataType_split + "_minutely",
-                TimeGranularity.Hour => dataType_split + "_hourly",
-                TimeGranularity.Day => dataType_split + "_daily",
-                _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
-            };
+        {
+            TimeGranularity.Minute => dataType_split + "_minutely",
+            TimeGranularity.Hour => dataType_split + "_hourly",
+            TimeGranularity.Day => dataType_split + "_daily",
+            _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
+        };
         var aggregateColumnName = request.Function switch
-            {
-                AggregationFunction.Avg => "avg_" + dataType,
-                AggregationFunction.Sum => "sum_" + dataType,
-                AggregationFunction.Min => "min_" + dataType,
-                AggregationFunction.Max => "max_" + dataType,
-                AggregationFunction.Count => "sample_count",
-                _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
-            };
+        {
+            AggregationFunction.Avg => "avg_" + dataType,
+            AggregationFunction.Sum => "sum_" + dataType,
+            AggregationFunction.Min => "min_" + dataType,
+            AggregationFunction.Max => "max_" + dataType,
+            AggregationFunction.Count => "sample_count",
+            _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
+        };
 
         if (!request.Fields.IsNullOrEmpty())
         {
