@@ -149,13 +149,17 @@ DROP MATERIALIZED VIEW IF EXISTS dust_data_hourly;
 DROP MATERIALIZED VIEW IF EXISTS dust_data_daily;
 DROP MATERIALIZED VIEW IF EXISTS dust_data_minutely;
 
+-- Time variables
+\set MINUTE_INTERVAL 'INTERVAL ''1 minute'''
+\set HOUR_INTERVAL 'INTERVAL ''1 hour'''
+\set DAY_INTERVAL 'INTERVAL ''1 day'''
 
 -- Noise Data
 
 -- Minute aggregation: Groups data into 1 minute intervals and calculates average, sum, count, min, and max exposure levels.
 CREATE MATERIALIZED VIEW noise_data_minutely AS
 SELECT 
-    time_bucket('1 minute', "Time") AS bucket,
+    time_bucket(:MINUTE_INTERVAL, "Time") AS bucket,
     AVG("LavgQ3") AS avg_noise,
     SUM("LavgQ3") AS sum_noise,
     COUNT(*) AS sample_count,
@@ -168,7 +172,7 @@ ORDER BY bucket;
 -- Hour aggregation: Groups data into 1 hour intervals and calculates average, sum, count, min, and max exposure levels.
 CREATE MATERIALIZED VIEW noise_data_hourly AS
 SELECT 
-    time_bucket('1 hour', "Time") AS bucket,
+    time_bucket(:HOUR_INTERVAL, "Time") AS bucket,
     AVG("LavgQ3") AS avg_noise,
     SUM("LavgQ3") AS sum_noise,
     COUNT(*) AS sample_count,
@@ -181,7 +185,7 @@ ORDER BY bucket;
 -- Daily aggregation: Groups data into 1 day intervals and calculates average, sum, count, min, and max exposure levels.
 CREATE MATERIALIZED VIEW noise_data_daily AS
 SELECT 
-    time_bucket('1 day', "Time") AS bucket,
+    time_bucket(:DAY_INTERVAL, "Time") AS bucket,
     AVG("LavgQ3") AS avg_noise,
     SUM("LavgQ3") AS sum_noise,
     COUNT(*) AS sample_count,
@@ -196,7 +200,7 @@ ORDER BY bucket;
 
 CREATE MATERIALIZED VIEW vibration_data_minutely AS
 SELECT 
-    time_bucket('1 minute', "ConnectedOn") AS bucket,
+    time_bucket(:MINUTE_INTERVAL, "ConnectedOn") AS bucket,
     AVG("Exposure") AS avg_vibration,
     SUM("Exposure") AS sum_vibration,
     COUNT(*) AS sample_count,
@@ -209,7 +213,7 @@ ORDER BY bucket;
 
 CREATE MATERIALIZED VIEW vibration_data_hourly AS
 SELECT 
-    time_bucket('1 hour', "ConnectedOn") AS bucket,
+    time_bucket(:HOUR_INTERVAL, "ConnectedOn") AS bucket,
     AVG("Exposure") AS avg_vibration,
     SUM("Exposure") AS sum_vibration,
     COUNT(*) AS sample_count,
@@ -222,7 +226,7 @@ ORDER BY bucket;
 
 CREATE MATERIALIZED VIEW vibration_data_daily AS
 SELECT 
-    time_bucket('1 day', "ConnectedOn") AS bucket,
+    time_bucket(:DAY_INTERVAL, "ConnectedOn") AS bucket,
     AVG("Exposure") AS avg_vibration,
     SUM("Exposure") AS sum_vibration,
     COUNT(*) AS sample_count,
@@ -238,7 +242,7 @@ ORDER BY bucket;
 
 CREATE MATERIALIZED VIEW dust_data_minutely AS
 SELECT 
-    time_bucket('1 minute', "Time") AS bucket,
+    time_bucket(:MINUTE_INTERVAL, "Time") AS bucket,
     AVG("PM1S") AS avg_dust_pm1_stel,
     AVG("PM25S") AS avg_dust_pm25_stel,
     AVG("PM4S") AS avg_dust_pm4_stel,
@@ -254,7 +258,7 @@ ORDER BY bucket;
 
 CREATE MATERIALIZED VIEW dust_data_hourly AS
 SELECT 
-    time_bucket('1 hour', "Time") AS bucket,
+    time_bucket(:HOUR_INTERVAL, "Time") AS bucket,
     AVG("PM1S") AS avg_dust_pm1_stel,
     AVG("PM25S") AS avg_dust_pm25_stel,
     AVG("PM4S") AS avg_dust_pm4_stel,
@@ -270,7 +274,7 @@ ORDER BY bucket;
 
 CREATE MATERIALIZED VIEW dust_data_daily AS
 SELECT 
-    time_bucket('1 day', "Time") AS bucket,
+    time_bucket(:DAY_INTERVAL, "Time") AS bucket,
     AVG("PM1S") AS avg_dust_pm1_stel,
     AVG("PM25S") AS avg_dust_pm25_stel,
     AVG("PM4S") AS avg_dust_pm4_stel,
