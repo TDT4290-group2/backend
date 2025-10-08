@@ -167,7 +167,7 @@ SELECT
     MAX("LavgQ3") AS max_noise
 FROM "NoiseData"
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 -- Hour aggregation: Groups data into 1 hour intervals and calculates average, sum, count, min, and max exposure levels.
 CREATE MATERIALIZED VIEW noise_data_hourly AS
@@ -180,7 +180,7 @@ SELECT
     MAX("LavgQ3") AS max_noise
 FROM "NoiseData"
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 -- Daily aggregation: Groups data into 1 day intervals and calculates average, sum, count, min, and max exposure levels.
 CREATE MATERIALIZED VIEW noise_data_daily AS
@@ -193,7 +193,7 @@ SELECT
     MAX("LavgQ3") AS max_noise
 FROM "NoiseData"
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 
 -- Vibration Data
@@ -209,7 +209,7 @@ SELECT
 FROM "VibrationData"
 WHERE "ConnectedOn" IS NOT NULL
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 CREATE MATERIALIZED VIEW vibration_data_hourly AS
 SELECT 
@@ -222,7 +222,7 @@ SELECT
 FROM "VibrationData"
 WHERE "ConnectedOn" IS NOT NULL
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 CREATE MATERIALIZED VIEW vibration_data_daily AS
 SELECT 
@@ -235,7 +235,7 @@ SELECT
 FROM "VibrationData"
 WHERE "ConnectedOn" IS NOT NULL
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 
 -- Dust Data
@@ -251,10 +251,34 @@ SELECT
     SUM("PM25S") AS sum_dust_pm25_stel,
     SUM("PM4S") AS sum_dust_pm4_stel,
     SUM("PM10S") AS sum_dust_pm10_stel,
-    COUNT(*) AS sample_count
+    COUNT(*) AS sample_count,
+    MIN("PM1S") AS min_dust_pm1_stel,
+    MIN("PM25S") AS min_dust_pm25_stel,
+    MIN("PM4S") AS min_dust_pm4_stel,
+    MIN("PM10S") AS min_dust_pm10_stel,
+    MAX("PM1S") AS max_dust_pm1_stel,
+    MAX("PM25S") AS max_dust_pm25_stel, 
+    MAX("PM4S") AS max_dust_pm4_stel,
+    MAX("PM10S") AS max_dust_pm10_stel,
+    AVG("PM1T") AS avg_dust_pm1_twa,
+    AVG("PM25T") AS avg_dust_pm25_twa,
+    AVG("PM4T") AS avg_dust_pm4_twa,
+    AVG("PM10T") AS avg_dust_pm10_twa,
+    SUM("PM1T") AS sum_dust_pm1_twa,
+    SUM("PM25T") AS sum_dust_pm25_twa,
+    SUM("PM4T") AS sum_dust_pm4_twa,
+    SUM("PM10T") AS sum_dust_pm10_twa,
+    MIN("PM1T") AS min_dust_pm1_twa,
+    MIN("PM25T") AS min_dust_pm25_twa,
+    MIN("PM4T") AS min_dust_pm4_twa,
+    MIN("PM10T") AS min_dust_pm10_twa,
+    MAX("PM1T") AS max_dust_pm1_twa,
+    MAX("PM25T") AS max_dust_pm25_twa,
+    MAX("PM4T") AS max_dust_pm4_twa,
+    MAX("PM10T") AS max_dust_pm10_twa
 FROM "DustData"
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 CREATE MATERIALIZED VIEW dust_data_hourly AS
 SELECT 
@@ -267,10 +291,34 @@ SELECT
     SUM("PM25S") AS sum_dust_pm25_stel,
     SUM("PM4S") AS sum_dust_pm4_stel,
     SUM("PM10S") AS sum_dust_pm10_stel,
-    COUNT(*) AS sample_count
+    COUNT(*) AS sample_count,
+    MIN("PM1S") AS min_dust_pm1_stel,
+    MIN("PM25S") AS min_dust_pm25_stel,
+    MIN("PM4S") AS min_dust_pm4_stel,
+    MIN("PM10S") AS min_dust_pm10_stel,
+    MAX("PM1S") AS max_dust_pm1_stel,
+    MAX("PM25S") AS max_dust_pm25_stel, 
+    MAX("PM4S") AS max_dust_pm4_stel,
+    MAX("PM10S") AS max_dust_pm10_stel,
+    AVG("PM1T") AS avg_dust_pm1_twa,
+    AVG("PM25T") AS avg_dust_pm25_twa,
+    AVG("PM4T") AS avg_dust_pm4_twa,
+    AVG("PM10T") AS avg_dust_pm10_twa,
+    SUM("PM1T") AS sum_dust_pm1_twa,
+    SUM("PM25T") AS sum_dust_pm25_twa,
+    SUM("PM4T") AS sum_dust_pm4_twa,
+    SUM("PM10T") AS sum_dust_pm10_twa,
+    MIN("PM1T") AS min_dust_pm1_twa,
+    MIN("PM25T") AS min_dust_pm25_twa,
+    MIN("PM4T") AS min_dust_pm4_twa,
+    MIN("PM10T") AS min_dust_pm10_twa,
+    MAX("PM1T") AS max_dust_pm1_twa,
+    MAX("PM25T") AS max_dust_pm25_twa,
+    MAX("PM4T") AS max_dust_pm4_twa,
+    MAX("PM10T") AS max_dust_pm10_twa
 FROM "DustData"
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 CREATE MATERIALIZED VIEW dust_data_daily AS
 SELECT 
@@ -283,10 +331,34 @@ SELECT
     SUM("PM25S") AS sum_dust_pm25_stel,
     SUM("PM4S") AS sum_dust_pm4_stel,
     SUM("PM10S") AS sum_dust_pm10_stel,
-    COUNT(*) AS sample_count
+    COUNT(*) AS sample_count,
+    MIN("PM1S") AS min_dust_pm1_stel,
+    MIN("PM25S") AS min_dust_pm25_stel,
+    MIN("PM4S") AS min_dust_pm4_stel,
+    MIN("PM10S") AS min_dust_pm10_stel,
+    MAX("PM1S") AS max_dust_pm1_stel,
+    MAX("PM25S") AS max_dust_pm25_stel, 
+    MAX("PM4S") AS max_dust_pm4_stel,
+    MAX("PM10S") AS max_dust_pm10_stel,
+    AVG("PM1T") AS avg_dust_pm1_twa,
+    AVG("PM25T") AS avg_dust_pm25_twa,
+    AVG("PM4T") AS avg_dust_pm4_twa,
+    AVG("PM10T") AS avg_dust_pm10_twa,
+    SUM("PM1T") AS sum_dust_pm1_twa,
+    SUM("PM25T") AS sum_dust_pm25_twa,
+    SUM("PM4T") AS sum_dust_pm4_twa,
+    SUM("PM10T") AS sum_dust_pm10_twa,
+    MIN("PM1T") AS min_dust_pm1_twa,
+    MIN("PM25T") AS min_dust_pm25_twa,
+    MIN("PM4T") AS min_dust_pm4_twa,
+    MIN("PM10T") AS min_dust_pm10_twa,
+    MAX("PM1T") AS max_dust_pm1_twa,
+    MAX("PM25T") AS max_dust_pm25_twa,
+    MAX("PM4T") AS max_dust_pm4_twa,
+    MAX("PM10T") AS max_dust_pm10_twa
 FROM "DustData"
 GROUP BY bucket
-ORDER BY bucket;
+ORDER BY bucket ASC;
 
 
 -- Create indexes on materialized views for better query performance when querying based on the time bucket
