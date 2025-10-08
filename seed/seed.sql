@@ -297,3 +297,25 @@ CREATE INDEX idx_vibration_daily_bucket ON vibration_data_daily(bucket);
 CREATE INDEX idx_dust_minutely_bucket ON dust_data_minutely(bucket);
 CREATE INDEX idx_dust_hourly_bucket ON dust_data_hourly(bucket);
 CREATE INDEX idx_dust_daily_bucket ON dust_data_daily(bucket);
+
+-- ...existing code...
+
+-- USER DATA
+DELETE FROM "User";
+
+INSERT INTO "User" ("Id", "Username", "Email", "PasswordHash", "CreatedAt")
+VALUES 
+    ('12345678-1234-5678-1234-567812345678', 
+    'testuser1', 
+    'test1@example.com',
+    '$2a$11$QXVHkr6TQC8gJvh5P4GFzOYc.HyZA3FxDC3/BghAM3hODQVAoWwwi', -- hashed 'password123'
+    NOW()),
+    ('87654321-8765-4321-8765-432187654321',
+    'testuser2',
+    'test2@example.com',
+    '$2a$11$k5RIyHdZgB2VrXEY8iShzOiSNr3ZVVZd5GmWJHJFHQUKJROtajTxK', -- hashed 'password456'
+    NOW());
+
+-- Create index for Users
+CREATE INDEX idx_users_email ON "User"("Email");
+CREATE INDEX idx_users_username ON "User"("Username");
