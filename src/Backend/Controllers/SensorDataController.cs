@@ -1,20 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
-using Backend.Records;
 using Backend.Services;
 using Backend.DTOs;
+using Backend.Models;
+using Backend.Validation;
 
 namespace Backend.Controllers;
 
 [ApiController]
 [Route("api/sensor")]
-public class SensorDataController : ControllerBase
+public class SensorDataController(ISensorDataService sensorDataService) : ControllerBase
 {
-    private readonly ISensorDataService _sensorDataService;
-
-    public SensorDataController(ISensorDataService sensorDataService)
-    {
-        _sensorDataService = sensorDataService;
-    }
+    private readonly ISensorDataService _sensorDataService = sensorDataService;
 
     [HttpGet("noisedata/all")]
     public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAllNoiseData()
@@ -29,9 +25,32 @@ public class SensorDataController : ControllerBase
     }
 
     [HttpGet("{dataType}/{userId}")]
-    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedNoiseData([FromBody] SensorDataRequestDto request, [FromRoute] Guid userId, [FromRoute] string dataType)
+    [ServiceFilter(typeof(ValidateFieldForDataTypeFilter))]
+    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedSensorData(
+        [FromBody] SensorDataRequestDto request,
+        [FromRoute] Guid userId,
+        [FromRoute] DataType dataType)
     {
-        var response = await _sensorDataService.GetAggregatedDataAsync(request, userId, dataType);
-        return Ok(response);
+        if (request.StartTime >= request.EndTime)
+        {
+            return BadRequest("StartTime must be earlier than EndTime.");
+        }
+        try
+        {
+            var response = await _sensorDataService.GetAggregatedDataAsync(request, userId, dataType);
+            return Ok(response);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest($"The request is invalid: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound($"The requested resource was not found: {ex.Message}");
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, $"Internal server error");
+        }
     }
 }

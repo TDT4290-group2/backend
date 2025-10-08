@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Services;
+using Backend.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ISensorDataService, SensorDataService>();
+builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
 
 var app = builder.Build();
 app.MapControllers();
