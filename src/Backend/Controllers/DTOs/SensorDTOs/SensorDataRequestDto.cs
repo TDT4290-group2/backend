@@ -19,9 +19,9 @@ public enum AggregationFunction
 }
 
 public record SensorDataRequestDto(
-    [Required] DateTimeOffset StartTime,
-    DateTimeOffset EndTime,
-    [Required] TimeGranularity Granularity,
-    [Required] AggregationFunction Function,
+    [Required] DateTimeOffset? StartTime,
+    [Required] DateTimeOffset? EndTime,
+    [Required] TimeGranularity? Granularity,
+    [Required] AggregationFunction? Function,
     string[] Fields
-);
+);  
