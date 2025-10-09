@@ -1,0 +1,16 @@
+using Backend.DTOs;
+using Backend.Models;
+
+public class RequestContext
+{
+    public SensorDataRequestDto? Request { get; set; }
+    public Guid? UserId { get; set; }
+    public DataType? DataType { get; set; }
+
+    public void Initialize(SensorDataRequestDto request, Guid userId, DataType dataType)
+    {
+        Request = request;
+        UserId = userId;
+        DataType = dataType;
+    }
+}

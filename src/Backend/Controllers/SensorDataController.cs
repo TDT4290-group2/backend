@@ -26,7 +26,7 @@ public class SensorDataController(ISensorDataService sensorDataService) : Contro
 
     [HttpGet("{dataType}/{userId}")]
     [ServiceFilter(typeof(ValidateFieldForDataTypeFilter))]
-    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedSensorData(
+    public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedData(
         [FromBody] SensorDataRequestDto request,
         [FromRoute] Guid userId,
         [FromRoute] DataType dataType)
@@ -37,7 +37,9 @@ public class SensorDataController(ISensorDataService sensorDataService) : Contro
         }
         try
         {
-            var response = await _sensorDataService.GetAggregatedDataAsync(request, userId, dataType);
+            var requestContext = new RequestContext();
+            requestContext.Initialize(request, userId, dataType);
+            var response = await _sensorDataService.GetAggregatedDataAsync(requestContext);
             return Ok(response);
         }
         catch (ArgumentException ex)

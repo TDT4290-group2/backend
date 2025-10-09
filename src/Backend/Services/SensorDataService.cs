@@ -9,7 +9,7 @@ namespace Backend.Services;
 public interface ISensorDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
-    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(SensorDataRequestDto request, Guid userId, DataType dataType);
+    Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext);
 }
 
 public class SensorDataService(AppDbContext context) : ISensorDataService
@@ -21,23 +21,29 @@ public class SensorDataService(AppDbContext context) : ISensorDataService
         return await _context.NoiseData.ToListAsync();
     }
 
-    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(SensorDataRequestDto request, Guid userId, DataType dataType)
+    public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext)
     {
-        var dataType_split = dataType.ToString().ToLower() + "_data";
+        var request = requestContext.Request ?? throw new ArgumentException("Request is not initialized.");
+        var dataType = requestContext.DataType ?? throw new ArgumentException("DataType is not initialized.");
+
+        var dataTypeLower = dataType.ToString().ToLower();
+
+        var dataType_split = dataTypeLower + "_data";
 
         var materializedViewName = request.Granularity switch
-            {
-                TimeGranularity.Minute => dataType_split + "_minutely",
-                TimeGranularity.Hour => dataType_split + "_hourly",
-                TimeGranularity.Day => dataType_split + "_daily",
-                _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
-            };
+        {
+            TimeGranularity.Minute => dataType_split + "_minutely",
+            TimeGranularity.Hour => dataType_split + "_hourly",
+            TimeGranularity.Day => dataType_split + "_daily",
+            _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
+        };
+        
         var aggregateColumnName = request.Function switch
             {
-                AggregationFunction.Avg => "avg_" + dataType.ToString().ToLower(),
-                AggregationFunction.Sum => "sum_" + dataType.ToString().ToLower(),
-                AggregationFunction.Min => "min_" + dataType.ToString().ToLower(),
-                AggregationFunction.Max => "max_" + dataType.ToString().ToLower(),
+                AggregationFunction.Avg => "avg_" + dataTypeLower,
+                AggregationFunction.Sum => "sum_" + dataTypeLower,
+                AggregationFunction.Min => "min_" + dataTypeLower,
+                AggregationFunction.Max => "max_" + dataTypeLower,
                 AggregationFunction.Count => "sample_count",
                 _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
             };
@@ -46,6 +52,9 @@ public class SensorDataService(AppDbContext context) : ISensorDataService
         {
             aggregateColumnName += "_" + request.Field.Value.ToString().ToLower();
         }
+
+        var startTime = request.StartTime ?? throw new ArgumentException("StartTime is required.");
+        var endTime = request.EndTime ?? throw new ArgumentException("EndTime is required.");
 
         var sql = $@"
             SELECT 
@@ -56,7 +65,7 @@ public class SensorDataService(AppDbContext context) : ISensorDataService
             ORDER BY bucket";
 
         var result = await _context.Database
-            .SqlQueryRaw<SensorDataResponseDto>(sql, request.StartTime, request.EndTime)
+            .SqlQueryRaw<SensorDataResponseDto>(sql, startTime, endTime)
             .ToListAsync();
 
         if (result.Count == 0)

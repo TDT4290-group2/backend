@@ -3,6 +3,15 @@ using Backend.Services;
 using Backend.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
+var  AllowDevFrontend = "_allowDevFrontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowDevFrontend,
+        policy  =>
+        {
+            policy.WithOrigins("http://localhost:5173").AllowAnyHeader();
+        });
+});
 builder.Services.AddControllers();
 
 
@@ -17,6 +26,7 @@ builder.Services.AddScoped<ISensorDataService, SensorDataService>();
 builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
 
 var app = builder.Build();
+app.UseCors(AllowDevFrontend);
 app.MapControllers();
 
 // Configure the HTTP request pipeline.

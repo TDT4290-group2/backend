@@ -3,16 +3,20 @@
 This repository contains the backend code for the HealthTech application, which gives workers in the industrial sector access to exposure data for a range of exposure types.
 
 ## Table of Contents
-- [Requirements](#requirements)
-- [Setting up the backend and DB](#setting-up-the-backend-and-db)
-  - [Locally](#locally)
-  - [Docker](#docker)
-- [Updating the DB](#updating-the-db)
-- [Setting up docker](#setting-up-docker)
-- [Running tests](#running-tests)
-- [Endpoints](#endpoints)
-  - [Docker](#docker-1)
-  - [Locally](#locally-1)
+- [HealthTech backend](#healthtech-backend)
+  - [Table of Contents](#table-of-contents)
+  - [Requirements](#requirements)
+  - [Setting up the backend and DB](#setting-up-the-backend-and-db)
+    - [Locally](#locally)
+    - [Docker](#docker)
+  - [Updating the DB](#updating-the-db)
+  - [Setting up docker](#setting-up-docker)
+  - [Seeding the Database with sample data](#seeding-the-database-with-sample-data)
+  - [Running tests](#running-tests)
+  - [Endpoints](#endpoints)
+  - [Hypertables](#hypertables)
+    - [Making a new hypertable](#making-a-new-hypertable)
+    - [Verifying the hypertable exists](#verifying-the-hypertable-exists)
 
 
 ## Requirements
