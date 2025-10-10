@@ -24,7 +24,7 @@ public class SensorDataController(ISensorDataService sensorDataService) : Contro
         return Ok(response);
     }
 
-    [HttpGet("{dataType}/{userId}")]
+    [HttpPost("{dataType}/{userId}")]
     [ServiceFilter(typeof(ValidateFieldForDataTypeFilter))]
     public async Task<ActionResult<IEnumerable<SensorDataResponseDto>>> GetAggregatedData(
         [FromBody] SensorDataRequestDto request,
