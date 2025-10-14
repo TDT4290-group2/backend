@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Backend.Controllers;
 using Backend.Records;
+using Backend.Models;
 
 namespace Backend.Tests.UnitTests.Controllers;
 
@@ -32,9 +33,9 @@ public class NoiseControllerTests
             DateTimeOffset.Parse("2025-02-25T16:14:10+00:00"),
             (TimeGranularity)2,
             (AggregationFunction)0,
-            Array.Empty<string>()
+            null
         );
-        var noiseResult = await controller.GetAggregatedData(noiseRequest, Guid.NewGuid(), "noise");
+        var noiseResult = await controller.GetAggregatedData(noiseRequest, Guid.NewGuid(), DataType.Noise);
         var okNoiseResult = noiseResult.Result as OkObjectResult;
         Assert.IsType<OkObjectResult>(okNoiseResult);
         var noiseData = okNoiseResult.Value as IEnumerable<SensorDataResponseDto>;
@@ -46,9 +47,9 @@ public class NoiseControllerTests
             DateTimeOffset.Parse("2025-02-25T16:14:10+00:00"),
             (TimeGranularity)2,
             (AggregationFunction)0,
-            Array.Empty<string>()
+            null
         );
-        var dustResult = await controller.GetAggregatedData(dustRequest, Guid.NewGuid(), "dust");
+        var dustResult = await controller.GetAggregatedData(dustRequest, Guid.NewGuid(), DataType.Dust);
         var okDustResult = dustResult.Result as OkObjectResult;
         Assert.IsType<OkObjectResult>(okDustResult);
         var dustData = okDustResult.Value as IEnumerable<SensorDataResponseDto>;
@@ -60,9 +61,9 @@ public class NoiseControllerTests
             DateTimeOffset.Parse("2025-02-25T16:14:10+00:00"),
             (TimeGranularity)2,
             (AggregationFunction)0,
-            ["pm10_stel"]
+            Field.Pm10_stel
         );
-        var vibrationResult = await controller.GetAggregatedData(vibrationRequest, Guid.NewGuid(), "vibration");
+        var vibrationResult = await controller.GetAggregatedData(vibrationRequest, Guid.NewGuid(), DataType.Vibration);
         var okVibrationResult = vibrationResult.Result as OkObjectResult;
         Assert.IsType<OkObjectResult>(okVibrationResult);
         var vibrationData = okVibrationResult.Value as IEnumerable<SensorDataResponseDto>;
@@ -95,9 +96,9 @@ public class NoiseControllerTests
             DateTimeOffset.Parse("2025-02-25T16:14:10+00:00"),
             (TimeGranularity)2,
             (AggregationFunction)0,
-            Array.Empty<string>()
+            null
         );
-        var result = await controller.GetAggregatedData(request, Guid.NewGuid(), "noise");
+        var result = await controller.GetAggregatedData(request, Guid.NewGuid(), DataType.Noise);
         var okResult = result.Result as OkObjectResult;
         Assert.IsType<OkObjectResult>(okResult);
 
