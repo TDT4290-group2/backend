@@ -1,4 +1,5 @@
 using Backend.DTOs;
+using Backend.Models;
 using Backend.Records;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,14 +12,9 @@ public interface ISensorDataService
     Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext);
 }
 
-public class SensorDataService : ISensorDataService
+public class SensorDataService(AppDbContext context) : ISensorDataService
 {
-    private readonly AppDbContext _context;
-
-    public SensorDataService(AppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly AppDbContext _context = context;
 
     public async Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync()
     {
@@ -27,9 +23,12 @@ public class SensorDataService : ISensorDataService
 
     public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext)
     {
-        var request = requestContext.Request;
-        var dataType = requestContext.DataType;
-        var dataType_split = dataType + "_data";
+        var request = requestContext.Request ?? throw new ArgumentException("Request is not initialized.");
+        var dataType = requestContext.DataType ?? throw new ArgumentException("DataType is not initialized.");
+
+        var dataTypeLower = dataType.ToString().ToLower();
+
+        var dataType_split = dataTypeLower + "_data";
 
         var materializedViewName = request.Granularity switch
         {
@@ -38,20 +37,24 @@ public class SensorDataService : ISensorDataService
             TimeGranularity.Day => dataType_split + "_daily",
             _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
         };
+        
         var aggregateColumnName = request.Function switch
-        {
-            AggregationFunction.Avg => "avg_" + dataType,
-            AggregationFunction.Sum => "sum_" + dataType,
-            AggregationFunction.Min => "min_" + dataType,
-            AggregationFunction.Max => "max_" + dataType,
-            AggregationFunction.Count => "sample_count",
-            _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
-        };
+            {
+                AggregationFunction.Avg => "avg_" + dataTypeLower,
+                AggregationFunction.Sum => "sum_" + dataTypeLower,
+                AggregationFunction.Min => "min_" + dataTypeLower,
+                AggregationFunction.Max => "max_" + dataTypeLower,
+                AggregationFunction.Count => "sample_count",
+                _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
+            };
 
-        if (!request.Fields.IsNullOrEmpty())
+        if (request.Field.HasValue)
         {
-            aggregateColumnName += "_" + request.Fields[0];
+            aggregateColumnName += "_" + request.Field.Value.ToString().ToLower();
         }
+
+        var startTime = request.StartTime ?? throw new ArgumentException("StartTime is required.");
+        var endTime = request.EndTime ?? throw new ArgumentException("EndTime is required.");
 
         var sql = $@"
             SELECT 
@@ -61,22 +64,15 @@ public class SensorDataService : ISensorDataService
             WHERE bucket >= {{0}} AND bucket <= {{1}}
             ORDER BY bucket";
 
-        try
-        {
-            var result = await _context.Database
-                .SqlQueryRaw<SensorDataResponseDto>(sql, request.StartTime, request.EndTime)
-                .ToListAsync();
+        var result = await _context.Database
+            .SqlQueryRaw<SensorDataResponseDto>(sql, startTime, endTime)
+            .ToListAsync();
 
-            if (!result.Any())
-            {
-                return new List<SensorDataResponseDto>();
-            }
-
-            return result;
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("Sequence contains no elements"))
+        if (result.Count == 0)
         {
-            return new List<SensorDataResponseDto>();
+            return [];
         }
+
+        return result;
     }
 }
