@@ -7,6 +7,10 @@ using Backend.Models;
 
 namespace Backend.Tests.UnitTests.Controllers;
 
+
+/// <summary>
+/// Unit tests for SensorDataController to verify handling of various data retrieval scenarios.
+/// </summary>
 public class SensorDataControllerTests
 {
 
