@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<DustData> DustData { get; set; }
     public DbSet<VibrationData> VibrationData { get; set; }
     public DbSet<User> User { get; set; }
+    public DbSet<Notification> Notification { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
