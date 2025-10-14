@@ -5,6 +5,7 @@ namespace Backend.DTOs;
 public record NotificationRequestDto(
     [Required] string Title,
     [Required] Guid UserId,
-    [Required] DateTime CreatedAt
+    [Required] DateTime CreatedAt, 
+    string Message
 
 );
