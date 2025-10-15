@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Services;
 using Backend.Validation;
+using Backend.Observers;
+using Backend.Plugins.ThresholdChecker;
 
 var builder = WebApplication.CreateBuilder(args);
 var  AllowDevFrontend = "_allowDevFrontend";
@@ -24,6 +26,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ISensorDataService, SensorDataService>();
 builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
+
+// Remove the first ISensorDataService registration and keep only this one
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IThresholdObserver, ThresholdNotificationObserver>();
+builder.Services.AddScoped<IThresholdChecker, NoiseThresholdChecker>();  
+builder.Services.AddScoped<ISensorDataService, SensorDataService>(sp =>
+{
+    var service = new SensorDataService(
+        sp.GetRequiredService<AppDbContext>(),
+        sp.GetRequiredService<IEnumerable<IThresholdChecker>>());
+    
+    var observer = sp.GetRequiredService<IThresholdObserver>();
+    observer.Subscribe(service);
+    
+    return service;
+});
 
 var app = builder.Build();
 app.UseCors(AllowDevFrontend);

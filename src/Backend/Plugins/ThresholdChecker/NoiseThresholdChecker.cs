@@ -1,7 +1,6 @@
 using Backend.Models;
-using Backend.Plugins.ThresholdChecker;
 
-namespace Backend.Plugins;
+namespace Backend.Plugins.ThresholdChecker;
 
 public class NoiseThresholdChecker : IThresholdChecker
 {
