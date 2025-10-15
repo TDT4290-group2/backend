@@ -36,14 +36,14 @@ public class SensorDataService: ISensorDataService
         var checker = _thresholdCheckers.FirstOrDefault(c => c.SensorType == dataType);
         if (checker == null) return;
 
-        if (checker.IsThresholdExceeded(value, out string message))
+        if (checker.IsThresholdExceeded(value))
         {
             var eventArgs = new ThresholdExceededEventArgs(
                 userId: userId,
+                exceedingLevel: checker.GetExceedingLevel(value),
                 dataType: dataType,
                 value: value,
-                message: message,
-                timestamp: timestamp
+                happenedAt: timestamp
             );
             OnThresholdExceeded(eventArgs);
         }

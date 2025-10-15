@@ -38,10 +38,13 @@ public class ThresholdNotificationObserver : IThresholdObserver
     {
         var notification = e.ToNotification();
         var notificationDto = new NotificationRequestDto(
-            notification.Title,
             notification.UserId,
-            notification.CreatedAt,
-            notification.Message
+            notification.dataType,
+            notification.exceedingLevel,
+            notification.value,
+            notification.HappenedAt,
+            notification.IsRead,
+            notification.userMessage
         );
         await _notificationService.CreateNotificationAsync(e.UserId, notificationDto);
     }

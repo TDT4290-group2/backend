@@ -1,4 +1,5 @@
 using Backend.Models;
+using Backend.Records;
 
 namespace Backend.Events;
 
@@ -6,32 +7,40 @@ public class ThresholdExceededEventArgs : EventArgs
 {
     public Guid Id { get; }
     public Guid UserId { get; }
-    public string Title { get; }
-    public string Message { get; }
-    public DateTime CreatedAt { get; }
-    public bool IsRead { get; }
+    public ExceedingLevel ExceedingLevel { get; }
     public DataType DataType { get; }
     public double Value { get; }
+    public DateTime HappenedAt { get; }
+    public bool IsRead { get; }
+    public string UserMessage { get; }
 
     public ThresholdExceededEventArgs(
-        Guid userId, 
-        DataType dataType, 
-        double value, 
-        string message,
-        DateTime timestamp)
+        Guid userId,
+        ExceedingLevel exceedingLevel,
+        DataType dataType,
+        double value,
+        DateTime happenedAt)
     {
         Id = Guid.NewGuid();
         UserId = userId;
-        Title = $"{dataType} Threshold Exceeded";
-        Message = message;
-        CreatedAt = timestamp;
-        IsRead = false;
+        ExceedingLevel = exceedingLevel;
         DataType = dataType;
         Value = value;
+        HappenedAt = happenedAt;
+        IsRead = false;
+        UserMessage = "";
     }
 
-    public Records.Notification ToNotification()
+    public Notification ToNotification()
     {
-        return new Records.Notification(Id, UserId, Title, Message, CreatedAt, IsRead);
+        return new Notification(
+            Id,
+            UserId,
+            ExceedingLevel.ToString(),
+            DataType.ToString(),
+            Value,
+            HappenedAt,
+            IsRead,
+            UserMessage);
     }
 }
