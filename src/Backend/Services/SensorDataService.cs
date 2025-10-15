@@ -1,5 +1,7 @@
 using Backend.DTOs;
+using Backend.Events;
 using Backend.Models;
+using Backend.Plugins.ThresholdChecker;
 using Backend.Records;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,11 +12,47 @@ public interface ISensorDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
     Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext);
+    event EventHandler<ThresholdExceededEventArgs>? ThresholdExceeded;
 }
 
-public class SensorDataService(AppDbContext context) : ISensorDataService
+public class SensorDataService: ISensorDataService
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
+    private readonly IEnumerable<IThresholdChecker> _thresholdCheckers;
+
+    // Event for threshold exceeded
+    public event EventHandler<ThresholdExceededEventArgs>? ThresholdExceeded;
+    
+     public SensorDataService(
+        AppDbContext context,
+        IEnumerable<IThresholdChecker> thresholdCheckers)
+    {
+        _context = context;
+        _thresholdCheckers = thresholdCheckers;
+    }
+
+    private void CheckThresholdAndNotify(double value, Guid userId, DataType dataType, DateTime timestamp)
+    {
+        var checker = _thresholdCheckers.FirstOrDefault(c => c.SensorType == dataType);
+        if (checker == null) return;
+
+        if (checker.IsThresholdExceeded(value, out string message))
+        {
+            var eventArgs = new ThresholdExceededEventArgs(
+                userId: userId,
+                dataType: dataType,
+                value: value,
+                message: message,
+                timestamp: timestamp
+            );
+            OnThresholdExceeded(eventArgs);
+        }
+    }
+
+    private void OnThresholdExceeded(ThresholdExceededEventArgs e)
+    {
+        ThresholdExceeded?.Invoke(this, e);
+    }
 
     public async Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync()
     {

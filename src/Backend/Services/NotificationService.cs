@@ -12,10 +12,16 @@ public interface INotificationService
     Task<Notification?> GetNotificationByTitleAsync(Guid userId, string title);
     Task<Notification?> GetNotificationByTitleAndDateAsync(Guid userId, string title, DateTime createdAt);
     Task<Notification?> UpdateNotificationMessageAsync(Guid userId, string title, DateTime createdAt, NotificationRequestDto request);
+    Task<Notification> CreateNotificationAsync(Guid userId, NotificationRequestDto request);
 }
 public class NotificationService(AppDbContext context) : INotificationService
 {
     private readonly AppDbContext _context = context;
+
+    public Task<Notification> CreateNotificationAsync(Guid userId, NotificationRequestDto request)
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task<IEnumerable<Notification>> GetAllNotificationsAsync(Guid userId)
     {
