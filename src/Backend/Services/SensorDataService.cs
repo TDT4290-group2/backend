@@ -75,16 +75,16 @@ public class SensorDataService: ISensorDataService
             TimeGranularity.Day => dataType_split + "_daily",
             _ => throw new ArgumentException($"Unsupported scope: {request.Granularity}")
         };
-        
+
         var aggregateColumnName = request.Function switch
-            {
-                AggregationFunction.Avg => "avg_" + dataTypeLower,
-                AggregationFunction.Sum => "sum_" + dataTypeLower,
-                AggregationFunction.Min => "min_" + dataTypeLower,
-                AggregationFunction.Max => "max_" + dataTypeLower,
-                AggregationFunction.Count => "sample_count",
-                _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
-            };
+        {
+            AggregationFunction.Avg => "avg_" + dataTypeLower,
+            AggregationFunction.Sum => "sum_" + dataTypeLower,
+            AggregationFunction.Min => "min_" + dataTypeLower,
+            AggregationFunction.Max => "max_" + dataTypeLower,
+            AggregationFunction.Count => "sample_count",
+            _ => throw new ArgumentException($"Unsupported aggregation type: {request.Function}")
+        };
 
         if (request.Field.HasValue)
         {
