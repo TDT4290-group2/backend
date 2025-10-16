@@ -9,7 +9,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: AllowDevFrontend,
         policy  =>
         {
-            policy.WithOrigins("http://localhost:5173").AllowAnyHeader();
+            policy.SetIsOriginAllowed(origin => 
+                new Uri(origin).Host == "localhost"
+            ).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         });
 });
 builder.Services.AddControllers();
@@ -27,6 +29,13 @@ builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
 
 var app = builder.Build();
 app.UseCors(AllowDevFrontend);
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 app.MapControllers();
 
 // Configure the HTTP request pipeline.

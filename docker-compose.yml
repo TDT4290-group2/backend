@@ -11,20 +11,34 @@ services:
     volumes:
       - timescale_data:/var/lib/postgresql/data
       - ./seed:/seed
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Comment out the following section if you want to use a local .NET application instead
-  # dotnet_app:
-  #   build:
-  #     context: ./src/Backend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5063:8080"
-  #   environment:
-  #     ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=5432;Database=mydb;Username=postgres;Password=postgres"
-  #   container_name: dotnet_app
-  #   depends_on:
-  #     - timescaledb
-    
+  dotnet_app:
+    build:
+      context: ./src/Backend
+      dockerfile: Dockerfile
+    ports:
+      - "5063:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=5432;Database=mydb;Username=postgres;Password=postgres"
+    container_name: dotnet_app
+    depends_on:
+      timescaledb:
+        condition: service_healthy
 
+  frontend:
+    image: ghcr.io/tdt4290-group2/frontend:main
+    container_name: frontend
+    ports:
+      - "8080:3000"
+    depends_on:
+      - dotnet_app
+      - timescaledb
+    
 volumes:
   timescale_data:
