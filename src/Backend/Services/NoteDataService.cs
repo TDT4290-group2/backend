@@ -41,7 +41,7 @@ public class NoteDataService(AppDbContext dbContext) : INoteDataService
         }
 
         var existingNote = await _dbContext.NoteData
-            .AnyAsync(n => n.Time == createDto.Time!.Value.UtcDateTime);
+            .AnyAsync(n => n.Time == createDto.Time);
 
         if (existingNote)
         {
@@ -69,7 +69,7 @@ public class NoteDataService(AppDbContext dbContext) : INoteDataService
         }
         
         var note = await _dbContext.NoteData
-            .FirstOrDefaultAsync(n => n.Time == updateDto.Time!.Value.UtcDateTime);
+            .FirstOrDefaultAsync(n => n.Time == updateDto.Time);
 
         if (note == null)
         {
