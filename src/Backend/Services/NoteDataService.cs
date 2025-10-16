@@ -17,6 +17,11 @@ public class NoteDataService(AppDbContext dbContext) : INoteDataService
 
     public async Task<IEnumerable<NoteDataResponseDto>> GetNotesAsync(NoteDataRequestDto request)
     {
+        if (request.StartTime!.Value.Offset != TimeSpan.Zero || request.EndTime!.Value.Offset != TimeSpan.Zero)
+        {
+            throw new ArgumentException("Please provide time in UTC format");
+        }
+
         var notes = await _dbContext.NoteData
             .Where(n => n.Time >= request.StartTime && n.Time <= request.EndTime && !string.IsNullOrEmpty(n.Note))
             .ToListAsync();
@@ -30,6 +35,11 @@ public class NoteDataService(AppDbContext dbContext) : INoteDataService
 
     public async Task<string> CreateNoteAsync(NoteDataDto createDto)
     {
+        if (createDto.Time!.Value.Offset != TimeSpan.Zero)
+        {
+            throw new ArgumentException("Please provide time in UTC format");
+        }
+
         var existingNote = await _dbContext.NoteData
             .AnyAsync(n => n.Time == createDto.Time!.Value.UtcDateTime);
 
@@ -53,6 +63,11 @@ public class NoteDataService(AppDbContext dbContext) : INoteDataService
 
     public async Task<string> UpdateNoteAsync(NoteDataDto updateDto)
     {
+        if (updateDto.Time!.Value.Offset != TimeSpan.Zero)
+        {
+            throw new ArgumentException("Please provide time in UTC format");
+        }
+        
         var note = await _dbContext.NoteData
             .FirstOrDefaultAsync(n => n.Time == updateDto.Time!.Value.UtcDateTime);
 

@@ -13,8 +13,15 @@ public class NoteDataController(INoteDataService noteDataService) : ControllerBa
     [HttpPost("{userId}")]
     public async Task<ActionResult<IEnumerable<NoteDataResponseDto>>> GetNotesAsync([FromBody] NoteDataRequestDto request, [FromRoute] string userId)
     {
-        var notes = await _noteDataService.GetNotesAsync(request);
-        return Ok(notes);
+        try
+        {
+            var notes = await _noteDataService.GetNotesAsync(request);
+            return Ok(notes);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 
@@ -30,6 +37,10 @@ public class NoteDataController(INoteDataService noteDataService) : ControllerBa
         {
             return BadRequest(ex.Message);
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{userId}")]
@@ -41,6 +52,10 @@ public class NoteDataController(INoteDataService noteDataService) : ControllerBa
             return Ok(result);
         }
         catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
