@@ -31,7 +31,7 @@ public class NoteDataController(INoteDataService noteDataService) : ControllerBa
         try
         {
             var createdNote = await _noteDataService.CreateNoteAsync(createDto);
-            return Created($"/api/notes/{userId}/create", createdNote);
+            return Created($"/api/notes/{userId}", createdNote);
         }
         catch (InvalidOperationException ex)
         {
