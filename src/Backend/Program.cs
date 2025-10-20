@@ -24,6 +24,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ISensorDataService, SensorDataService>();
 builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
+builder.Services.AddScoped<INoteDataService, NoteDataService>();
 
 var app = builder.Build();
 app.UseCors(AllowDevFrontend);
