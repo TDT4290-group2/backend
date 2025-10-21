@@ -3,6 +3,7 @@ using Backend.Services;
 using Backend.Validation;
 using Backend.Observers;
 using Backend.Plugins.ThresholdChecker;
+using Backend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 var  AllowDevFrontend = "_allowDevFrontend";
@@ -31,22 +32,38 @@ builder.Services.AddScoped<INoteDataService, NoteDataService>();
 // Remove the first ISensorDataService registration and keep only this one
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IThresholdObserver, ThresholdNotificationObserver>();
-builder.Services.AddScoped<IThresholdChecker, NoiseThresholdChecker>();  
+builder.Services.AddScoped<IThresholdChecker, NoiseThresholdChecker>();
 builder.Services.AddScoped<ISensorDataService, SensorDataService>(sp =>
 {
     var service = new SensorDataService(
         sp.GetRequiredService<AppDbContext>(),
         sp.GetRequiredService<IEnumerable<IThresholdChecker>>());
-    
+
     var observer = sp.GetRequiredService<IThresholdObserver>();
     observer.Subscribe(service);
-    
+
     return service;
 });
+
+// SignalR messages for notifications
+builder.Services.AddSignalR();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowDevFrontend,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // Required for SignalR
+        });
+});
+
 
 var app = builder.Build();
 app.UseCors(AllowDevFrontend);
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
