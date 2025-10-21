@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016111952_NoteTable")]
+    partial class NoteTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,37 +127,6 @@ namespace backend.Migrations
                     b.HasKey("Id", "Time");
 
                     b.ToTable("NoiseData");
-                });
-
-            modelBuilder.Entity("Backend.Records.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("HappenedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool?>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("dataType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("exceedingLevel")
-                        .HasColumnType("text");
-
-                    b.Property<string>("userMessage")
-                        .HasColumnType("text");
-
-                    b.Property<double?>("value")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("Id", "UserId");
-
-                    b.ToTable("Notification");
                 });
 
             modelBuilder.Entity("Backend.Records.VibrationData", b =>

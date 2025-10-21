@@ -26,6 +26,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ISensorDataService, SensorDataService>();
 builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
+builder.Services.AddScoped<INoteDataService, NoteDataService>();
 
 // Remove the first ISensorDataService registration and keep only this one
 builder.Services.AddScoped<INotificationService, NotificationService>();
