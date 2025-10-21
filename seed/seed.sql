@@ -442,3 +442,49 @@ CREATE INDEX IF NOT EXISTS idx_notification_userid ON "Notification"("UserId");
 CREATE INDEX IF NOT EXISTS idx_notification_title ON "Notification"("Title");
 CREATE INDEX IF NOT EXISTS idx_notification_isread ON "Notification"("IsRead");
 CREATE INDEX IF NOT EXISTS idx_notification_createdat ON "Notification"("CreatedAt");
+
+-- Create test user notifications for noise threshold exceeded
+INSERT INTO public."Notification" (
+    "Id", 
+    "UserId", 
+    "exceedingLevel", 
+    "dataType", 
+    "value", 
+    "HappenedAt", 
+    "IsRead", 
+    "userMessage"
+)
+VALUES 
+    -- Medium exceeding (87.0 dB)
+    (
+        gen_random_uuid(), 
+        'a1b2c3d4-e5f6-4321-8765-1a2b3c4d5e6f', 
+        'Medium',
+        'Noise',
+        87.0,
+        NOW() - INTERVAL '30 minutes',
+        false,
+        ''
+    ),
+    -- High exceeding (95.0 dB)
+    (
+        gen_random_uuid(), 
+        'a1b2c3d4-e5f6-4321-8765-1a2b3c4d5e6f', 
+        'High',
+        'Noise',
+        95.0,
+        NOW() - INTERVAL '20 minutes',
+        false,
+        ''
+    ),
+    -- High exceeding (90.0 dB)
+    (
+        gen_random_uuid(), 
+        'a1b2c3d4-e5f6-4321-8765-1a2b3c4d5e6f', 
+        'High',
+        'Noise',
+        90.0,
+        NOW() - INTERVAL '10 minutes',
+        false,
+        ''
+    );
