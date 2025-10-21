@@ -10,8 +10,8 @@ public interface INotificationService
 {
     Task<IEnumerable<Notification>> GetAllNotificationsAsync(Guid userId);
     Task<Notification?> GetNotificationByDataTypeAsync(Guid userId, string dataType);
-    Task<Notification?> GetNotificationByDataTypeAndDateAsync(Guid userId, string dataType, DateTime createdAt);
-    Task<Notification?> UpdateNotificationMessageAsync(Guid userId, string dataType, DateTime createdAt, NotificationRequestDto request);
+    Task<Notification?> GetNotificationByDataTypeAndDateAsync(Guid userId, string dataType, DateTime happenedAt);
+    Task<Notification?> UpdateNotificationMessageAsync(Guid userId, string dataType, DateTime happenedAt, NotificationRequestDto request);
     Task<Notification> CreateNotificationAsync(Guid userId, NotificationRequestDto request);
 }
 public class NotificationService(AppDbContext context) : INotificationService

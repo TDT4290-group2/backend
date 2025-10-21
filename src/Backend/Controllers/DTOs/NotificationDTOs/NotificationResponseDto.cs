@@ -1,12 +1,12 @@
 namespace Backend.DTOs;
 
-public class NotificationResponseDto //GET 
-{
-    public Guid UserId { get; set;}
-    public string ExceedingLevel { get; set;}
-    public string DataType { get; set;}
-    public double Value { get; set;}
-    public DateTime HappenedAt { get; set;}
-    public bool IsRead { get; set; }
-    public string UserMessage { get; set; }
-}
+public record NotificationResponseDto(
+    Guid Id,
+    Guid UserId,
+    string? ExceedingLevel,
+    string? DataType,
+    double? Value,
+    DateTime? HappenedAt,
+    bool? IsRead,
+    string? UserMessage
+);

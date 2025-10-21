@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Services;
 using Backend.DTOs;
-using Backend.Models;
-using Backend.Validation;
+using Backend.Records;
 
 namespace Backend.Controllers;
 
@@ -12,82 +11,60 @@ public class NotificationController(INotificationService notificationService) : 
 {
     private readonly INotificationService _notificationService = notificationService;
 
-    [HttpGet("{userId}/all")]
-    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetAllNotifications(Guid userId)
+    private static NotificationResponseDto ToResponseDto(Notification notification)
+    {
+        return new NotificationResponseDto(
+            notification.Id,
+            notification.UserId,
+            notification.exceedingLevel,
+            notification.dataType,
+            notification.value,
+            notification.HappenedAt,
+            notification.IsRead,
+            notification.userMessage
+        );
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetAllNotifications([FromQuery] Guid userId)
     {
         var notifications = await _notificationService.GetAllNotificationsAsync(userId);
-        var response = notifications.Select(n => new NotificationResponseDto
-        {
-            UserId = n.UserId,
-            Title = n.Title,
-            Message = n.Message,
-            CreatedAt = n.CreatedAt,
-            IsRead = n.IsRead
-        });
-        return Ok(response);
+        return Ok(notifications.Select(ToResponseDto));
     }
 
-    [HttpGet("{userId}/{title}")]
-    public async Task<ActionResult<NotificationResponseDto>> GetNotificationByTitle(Guid userId, string title)
+    [HttpGet("{userId}/{dataType}")]
+    public async Task<ActionResult<NotificationResponseDto>> GetNotificationByDataType(Guid userId, string dataType)
     {
-        var notification = await _notificationService.GetNotificationByTitleAsync(userId, title);
-        if (notification == null)
-        {
-            return NotFound();
-        }
-        var response = new NotificationResponseDto
-        {
-            UserId = notification.UserId,
-            Title = notification.Title,
-            Message = notification.Message,
-            CreatedAt = notification.CreatedAt,
-            IsRead = notification.IsRead
-        };
-        return Ok(response);
+        var notification = await _notificationService.GetNotificationByDataTypeAsync(userId, dataType);
+        if (notification == null) return NotFound();
+        return Ok(ToResponseDto(notification));
     }
 
-    [HttpGet("{userId}/{title}/{createdAt}")]
-    public async Task<ActionResult<NotificationResponseDto>> GetNotificationByTitleAndDate(Guid userId, string title, DateTime createdAt)
+    [HttpGet("{userId}/{dataType}/{happenedAt}")]
+    public async Task<ActionResult<NotificationResponseDto>> GetNotificationByDataTypeAndDate(
+        Guid userId,
+        string dataType,
+        DateTime happenedAt)
     {
-        var notification = await _notificationService.GetNotificationByTitleAndDateAsync(userId, title, createdAt);
-        if (notification == null)
-        {
-            return NotFound();
-        }
-        var response = new NotificationResponseDto
-        {
-            UserId = notification.UserId,
-            Title = notification.Title,
-            Message = notification.Message,
-            CreatedAt = notification.CreatedAt,
-            IsRead = notification.IsRead
-        };
-        return Ok(response);
+        var notification = await _notificationService.GetNotificationByDataTypeAndDateAsync(userId, dataType, happenedAt);
+        if (notification == null) return NotFound();
+        return Ok(ToResponseDto(notification));
     }
 
-    [HttpPut("{userId}/{title}/{createdAt}")]
+    [HttpPut("{userId}/{dataType}/{happenedAt}")]
     public async Task<ActionResult<NotificationResponseDto>> UpdateNotificationMessage(
-        Guid userId, 
-        string title, 
-        DateTime createdAt,
+        Guid userId,
+        string dataType,
+        DateTime happenedAt,
         [FromBody] NotificationRequestDto request)
     {
-        var notification = await _notificationService.UpdateNotificationMessageAsync(userId, title, createdAt, request);
-        
+        var notification = await _notificationService.UpdateNotificationMessageAsync(userId, dataType, happenedAt, request);
+
         if (notification == null)
         {
             return NotFound();
         }
 
-        var response = new NotificationResponseDto
-        {
-            UserId = notification.UserId,
-            Title = notification.Title,
-            Message = notification.Message,
-            CreatedAt = notification.CreatedAt,
-            IsRead = notification.IsRead
-        };
-
-        return Ok(response);
+        return Ok(ToResponseDto(notification));
     }
 }
