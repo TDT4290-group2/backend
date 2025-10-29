@@ -33,6 +33,7 @@ public class ThresholdExceededEventArgs : EventArgs
 
     public Notification ToNotification()
     {
+        var message = $"Sensor value {Value} exceeded threshold ({ExceedingLevel}) for {DataType}";
         return new Notification(
             Id,
             UserId,
@@ -41,6 +42,6 @@ public class ThresholdExceededEventArgs : EventArgs
             Value,
             HappenedAt,
             IsRead,
-            UserMessage);
+            message);
     }
 }

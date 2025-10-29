@@ -4,6 +4,9 @@ using Backend.Validation;
 using Backend.Observers;
 using Backend.Plugins.ThresholdChecker;
 using Backend.Hubs;
+using Backend.DTOs;
+using Backend.Events;
+using Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var AllowDevFrontend = "_allowDevFrontend";
@@ -25,14 +28,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<ISensorDataService, SensorDataService>();
 builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
 builder.Services.AddScoped<INoteDataService, NoteDataService>();
-
-// Remove the first ISensorDataService registration and keep only this one
-builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IThresholdObserver, ThresholdNotificationObserver>();
-builder.Services.AddScoped<IThresholdChecker, NoiseThresholdChecker>();
+builder.Services.AddScoped<IThresholdChecker>(sp => new ThresholdChecker(DataType.Noise));
+builder.Services.AddScoped<IThresholdChecker>(sp => new ThresholdChecker(DataType.Dust));
+builder.Services.AddScoped<IThresholdChecker>(sp => new ThresholdChecker(DataType.Vibration));
+
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
 builder.Services.AddScoped<ISensorDataService, SensorDataService>(sp =>
 {
     var service = new SensorDataService(
@@ -45,22 +49,6 @@ builder.Services.AddScoped<ISensorDataService, SensorDataService>(sp =>
     return service;
 });
 
-// SignalR messages for notifications
-
-builder.Services.AddScoped<INotificationService, NotificationService>();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: AllowDevFrontend,
-        policy =>
-        {
-            //policy.WithOrigins("http://localhost:5173")
-            policy.WithOrigins("http://localhost:8080") //for testing with node frontend
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials(); // Required for SignalR
-        });
-});
 builder.Services.AddSignalR();
 
 var app = builder.Build();
@@ -70,11 +58,38 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<NotificationHub>("/hub");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var sensorService = scope.ServiceProvider.GetRequiredService<ISensorDataService>();
+    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+    sensorService.ThresholdExceeded += async (_, args) =>
+    {
+        var notification = args.ToNotification();
+
+        var request = new NotificationRequestDto(
+            UserId: notification.UserId,
+            DataType: notification.dataType,
+            ExceedingLevel: notification.exceedingLevel,
+            Value: notification.value,
+            HappenedAt: notification.HappenedAt,
+            IsRead: notification.IsRead,
+            UserMessage: notification.userMessage
+        );
+        Console.WriteLine($"Notification triggered: {args.DataType} value {args.Value}");
+
+        await notificationService.CreateNotificationAsync(args.UserId, request);
+    };
+
+    // Optional: trigger processing of seeded sensor data
+    await sensorService.GenerateNotificationsFromSeededDataAsync();
+}
+
 
 //app.UseHttpsRedirection();
 

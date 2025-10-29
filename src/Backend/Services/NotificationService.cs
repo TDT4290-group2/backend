@@ -40,7 +40,7 @@ public class NotificationService : INotificationService
             userMessage: ""
         );
 
-        await _context.Notification.AddAsync(notification);
+        _context.Notification.Add(notification);
         await _context.SaveChangesAsync();
 
         // Broadcast to connected client

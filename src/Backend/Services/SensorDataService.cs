@@ -12,25 +12,51 @@ public interface ISensorDataService
 {
     Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync();
     Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext);
+    Task GenerateNotificationsFromSeededDataAsync();
     event EventHandler<ThresholdExceededEventArgs>? ThresholdExceeded;
 }
 
-public class SensorDataService: ISensorDataService
+public class SensorDataService : ISensorDataService
 {
     private readonly AppDbContext _context;
     private readonly IEnumerable<IThresholdChecker> _thresholdCheckers;
     public event EventHandler<ThresholdExceededEventArgs>? ThresholdExceeded;
-    
-     public SensorDataService(
-        AppDbContext context,
-        IEnumerable<IThresholdChecker> thresholdCheckers)
+
+    public SensorDataService(
+       AppDbContext context,
+       IEnumerable<IThresholdChecker> thresholdCheckers)
     {
         _context = context;
         _thresholdCheckers = thresholdCheckers;
     }
 
-    private void CheckThresholdAndNotify(double value, Guid userId, DataType dataType, DateTime timestamp)
+    public async Task GenerateNotificationsFromSeededDataAsync()
     {
+        var noiseData = await _context.NoiseData.ToListAsync();
+        foreach (var data in noiseData)
+        {
+            CheckThresholdAndNotify(data.LavgQ3, data.Id, DataType.Noise);
+        }
+
+        var dustData = await _context.DustData.ToListAsync();
+        foreach (var data in dustData)
+        {
+            CheckThresholdAndNotify(data.PM1S, data.Id, DataType.Dust);
+        }
+
+        var vibrationData = await _context.VibrationData.ToListAsync();
+        foreach (var data in vibrationData)
+        {
+            CheckThresholdAndNotify(data.Exposure, data.Id, DataType.Vibration);
+        }
+    }
+
+
+
+    private void CheckThresholdAndNotify(double value, Guid userId, DataType dataType)
+    {
+        Console.WriteLine($"Checking {dataType} value {value} for user {userId}");
+
         var checker = _thresholdCheckers.FirstOrDefault(c => c.SensorType == dataType);
         if (checker == null) return;
 
@@ -41,7 +67,7 @@ public class SensorDataService: ISensorDataService
                 exceedingLevel: checker.GetExceedingLevel(value),
                 dataType: dataType,
                 value: value,
-                happenedAt: timestamp
+                happenedAt: DateTime.UtcNow
             );
             OnThresholdExceeded(eventArgs);
         }
@@ -111,7 +137,7 @@ public class SensorDataService: ISensorDataService
 
         foreach (var data in result)
         {
-            CheckThresholdAndNotify(data.Value, userId, dataType, data.Time);
+            CheckThresholdAndNotify(data.Value, userId, dataType);
         }
 
         return result;
