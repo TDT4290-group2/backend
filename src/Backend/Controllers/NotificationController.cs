@@ -18,7 +18,7 @@ public class NotificationController(INotificationService notificationService, IH
     {
         return new NotificationResponseDto(
             notification.Id,
-            notification.UserId,
+            //notification.UserId,
             notification.exceedingLevel,
             notification.dataType,
             notification.value,
@@ -28,77 +28,56 @@ public class NotificationController(INotificationService notificationService, IH
         );
     }
 
-
-
-    [HttpGet("send-counter")]
-    public async Task<IActionResult> SendCounter([FromQuery] int value = 10)
-    {
-        for (int i = value; i > 0; i--)
-        {
-            await _hubContext.Clients.All.SendAsync("ReceiveCounter", i);
-            await Task.Delay(500); // Optional: delay for visibility
-        }
-
-        return Ok(new { message = $"Countdown from {value} completed" });
-    }
-
-
-    // Example: Create and push notification in real-time
-    [HttpPost("{userId}")]
+    [HttpPost]
     public async Task<ActionResult<NotificationResponseDto>> CreateNotification(
-        Guid userId,
         [FromBody] NotificationRequestDto request)
     {
-        var notification = await _notificationService.CreateNotificationAsync(userId, request);
+        var notification = await _notificationService.CreateNotificationAsync(request);
 
         // Push to client group via SignalR
-        await _hubContext.Clients
-            .Group(userId.ToString())
+        await _hubContext.Clients.All
             .SendAsync(NotificationHub.ReceiveNotification, notification);
 
         return Ok(ToResponseDto(notification));
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetAllNotifications([FromQuery] Guid userId)
+    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetAllNotifications()
     {
-        var notifications = await _notificationService.GetAllNotificationsAsync(userId);
+        var notifications = await _notificationService.GetAllNotificationsAsync();
         return Ok(notifications.Select(ToResponseDto));
     }
 
-    [HttpGet("{userId}/{dataType}")]
-    public async Task<ActionResult<NotificationResponseDto>> GetNotificationByDataType(Guid userId, string dataType)
+    [HttpGet("{dataType}")]
+    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetNotificationByDataType(string dataType)
     {
-        var notification = await _notificationService.GetNotificationByDataTypeAsync(userId, dataType);
-        if (notification == null) return NotFound();
-        return Ok(ToResponseDto(notification));
+        var notifications = await _notificationService.GetNotificationsByDataTypeAsync(dataType);
+        if (notifications == null || !notifications.Any()) return NotFound();
+        return Ok(notifications.Select(ToResponseDto));
     }
 
-    [HttpGet("{userId}/{dataType}/{happenedAt}")]
+    [HttpGet("{dataType}/{happenedAt}")]
     public async Task<ActionResult<NotificationResponseDto>> GetNotificationByDataTypeAndDate(
-        Guid userId,
         string dataType,
         DateTime happenedAt)
     {
-        var notification = await _notificationService.GetNotificationByDataTypeAndDateAsync(userId, dataType, happenedAt);
+        var notification = await _notificationService.GetNotificationByDataTypeAndDateAsync(dataType, happenedAt);
         if (notification == null) return NotFound();
         return Ok(ToResponseDto(notification));
     }
 
-    [HttpPut("{userId}/{dataType}/{happenedAt}")]
+    [HttpPut("{dataType}/{happenedAt}")]
     public async Task<ActionResult<NotificationResponseDto>> UpdateNotificationMessage(
-       Guid userId,
        string dataType,
        DateTime happenedAt,
        [FromBody] NotificationRequestDto request)
     {
-        var notification = await _notificationService.UpdateNotificationMessageAsync(userId, dataType, happenedAt, request);
+        var notification = await _notificationService.UpdateNotificationMessageAsync(dataType, happenedAt, request);
         if (notification == null)
             return NotFound();
 
         // Notify user of the update
-        await _hubContext.Clients
-            .Group(userId.ToString())
+        await _hubContext.Clients.All
             .SendAsync(NotificationHub.ReceiveNotification, notification);
 
         return Ok(ToResponseDto(notification));

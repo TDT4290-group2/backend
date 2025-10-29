@@ -36,7 +36,6 @@ public class ThresholdExceededEventArgs : EventArgs
         var message = $"Sensor value {Value} exceeded threshold ({ExceedingLevel}) for {DataType}";
         return new Notification(
             Id,
-            UserId,
             ExceedingLevel.ToString(),
             DataType.ToString(),
             Value,

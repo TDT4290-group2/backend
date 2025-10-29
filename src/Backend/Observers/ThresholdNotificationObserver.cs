@@ -40,7 +40,6 @@ public class ThresholdNotificationObserver : IThresholdObserver
     {
         var notification = e.ToNotification();
         var notificationDto = new NotificationRequestDto(
-            notification.UserId,
             notification.dataType,
             notification.exceedingLevel,
             notification.value,
@@ -48,7 +47,7 @@ public class ThresholdNotificationObserver : IThresholdObserver
             notification.IsRead,
             notification.userMessage
         );
-        await _notificationService.CreateNotificationAsync(e.UserId, notificationDto);
+        await _notificationService.CreateNotificationAsync(notificationDto);
     }
 
     public void Dispose()

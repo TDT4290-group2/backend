@@ -73,7 +73,6 @@ using (var scope = app.Services.CreateScope())
         var notification = args.ToNotification();
 
         var request = new NotificationRequestDto(
-            UserId: notification.UserId,
             DataType: notification.dataType,
             ExceedingLevel: notification.exceedingLevel,
             Value: notification.value,
@@ -83,7 +82,7 @@ using (var scope = app.Services.CreateScope())
         );
         Console.WriteLine($"Notification triggered: {args.DataType} value {args.Value}");
 
-        await notificationService.CreateNotificationAsync(args.UserId, request);
+        await notificationService.CreateNotificationAsync(request);
     };
 
     // Optional: trigger processing of seeded sensor data
