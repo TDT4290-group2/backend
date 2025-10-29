@@ -3,6 +3,9 @@ using Backend.Models;
 using Backend.Records;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.SignalR;
+using Backend.Hubs;
+
 
 namespace Backend.Services;
 
@@ -14,11 +17,17 @@ public interface INotificationService
     Task<Notification?> UpdateNotificationMessageAsync(Guid userId, string dataType, DateTime happenedAt, NotificationRequestDto request);
     Task<Notification> CreateNotificationAsync(Guid userId, NotificationRequestDto request);
 }
-public class NotificationService(AppDbContext context) : INotificationService
+public class NotificationService : INotificationService
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-     public async Task<Notification> CreateNotificationAsync(Guid userId, NotificationRequestDto request)
+    public NotificationService(AppDbContext context, IHubContext<NotificationHub> hubContext)
+    {
+        _context = context;
+        _hubContext = hubContext;
+    }
+    public async Task<Notification> CreateNotificationAsync(Guid userId, NotificationRequestDto request)
     {
         var notification = new Notification(
             Id: Guid.NewGuid(),
@@ -33,6 +42,11 @@ public class NotificationService(AppDbContext context) : INotificationService
 
         await _context.Notification.AddAsync(notification);
         await _context.SaveChangesAsync();
+
+        // Broadcast to connected client
+        await _hubContext.Clients.Group(userId.ToString()).SendAsync("alertReceived", notification);
+
+
         return notification;
     }
 
@@ -68,7 +82,7 @@ public class NotificationService(AppDbContext context) : INotificationService
 
         // Create a new notification with updated message since Notification is a record
         var updatedNotification = notification with { userMessage = request.UserMessage };
-        
+
         // Update the entity
         _context.Notification.Update(updatedNotification);
         await _context.SaveChangesAsync();

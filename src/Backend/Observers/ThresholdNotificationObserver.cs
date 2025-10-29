@@ -11,13 +11,11 @@ namespace Backend.Observers;
 public class ThresholdNotificationObserver : IThresholdObserver
 {
     private readonly INotificationService _notificationService;
-    private readonly IHubContext<NotificationHub> _hubContext;
     private readonly List<ISensorDataService> _observables = new();
 
-    public ThresholdNotificationObserver(INotificationService notificationService, IHubContext<NotificationHub> hubContext)
+    public ThresholdNotificationObserver(INotificationService notificationService)
     {
         _notificationService = notificationService;
-        _hubContext = hubContext;
     }
 
     public void Subscribe(ISensorDataService observable)
@@ -51,10 +49,6 @@ public class ThresholdNotificationObserver : IThresholdObserver
             notification.userMessage
         );
         await _notificationService.CreateNotificationAsync(e.UserId, notificationDto);
-
-        // Send real-time notification via SignalR
-        await _hubContext.Clients.Group(e.UserId.ToString())
-            .SendAsync(NotificationHub.ReceiveNotification, notification);
     }
 
     public void Dispose()

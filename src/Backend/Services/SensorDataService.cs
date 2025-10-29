@@ -19,8 +19,6 @@ public class SensorDataService: ISensorDataService
 {
     private readonly AppDbContext _context;
     private readonly IEnumerable<IThresholdChecker> _thresholdCheckers;
-
-    // Event for threshold exceeded
     public event EventHandler<ThresholdExceededEventArgs>? ThresholdExceeded;
     
      public SensorDataService(
@@ -63,9 +61,9 @@ public class SensorDataService: ISensorDataService
     {
         var request = requestContext.Request ?? throw new ArgumentException("Request is not initialized.");
         var dataType = requestContext.DataType ?? throw new ArgumentException("DataType is not initialized.");
+        var userId = requestContext.UserId ?? throw new ArgumentException("UserId is not initialized.");
 
         var dataTypeLower = dataType.ToString().ToLower();
-
         var dataType_split = dataTypeLower + "_data";
 
         var materializedViewName = request.Granularity switch
@@ -109,6 +107,11 @@ public class SensorDataService: ISensorDataService
         if (result.Count == 0)
         {
             return [];
+        }
+
+        foreach (var data in result)
+        {
+            CheckThresholdAndNotify(data.Value, userId, dataType, data.Time);
         }
 
         return result;

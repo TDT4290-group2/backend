@@ -6,11 +6,11 @@ using Backend.Plugins.ThresholdChecker;
 using Backend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
-var  AllowDevFrontend = "_allowDevFrontend";
+var AllowDevFrontend = "_allowDevFrontend";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: AllowDevFrontend,
-        policy  =>
+        policy =>
         {
             policy.WithOrigins("http://localhost:5173").AllowAnyHeader();
         });
@@ -46,24 +46,29 @@ builder.Services.AddScoped<ISensorDataService, SensorDataService>(sp =>
 });
 
 // SignalR messages for notifications
-builder.Services.AddSignalR();
+
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: AllowDevFrontend,
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            //policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:8080") //for testing with node frontend
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials(); // Required for SignalR
         });
 });
-
+builder.Services.AddSignalR();
 
 var app = builder.Build();
+app.UseRouting();
 app.UseCors(AllowDevFrontend);
+app.UseAuthorization();
 app.MapControllers();
-app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<NotificationHub>("/hub");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -71,7 +76,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 await app.RunAsync();
 
