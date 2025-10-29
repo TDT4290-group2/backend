@@ -9,18 +9,19 @@ public static class SensorThresholds
 {
     public static class Noise
     {
-        public const double LAeqThreshold = 85.0; // dB
-        public static readonly TimeSpan ExposureTimeLimit = TimeSpan.FromHours(8);
+        public static double WarningThreshold = 120.0; // dB
+        public static double DangerThreshold = 130.0; // dB
     }
 
     public static class Dust
     {
-        public const double PM10Threshold = 50.0; // μg/m³
-        public const double PM25Threshold = 25.0; // μg/m³
+        public static double WarningThreshold = 69.0; // μg/m³
+        public static double DangerThreshold = 100.0; // μg/m³
     }
 
     public static class Vibration
     {
-        public const double AccelerationThreshold = 2.5; // m/s²
+        public static double WarningThreshold = 100.0; // m/s²
+        public static double DangerThreshold = 400.0; // m/s²
     }
 }
