@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 using Backend.Records;
-using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Backend.Hubs;
 

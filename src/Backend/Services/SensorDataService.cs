@@ -4,7 +4,6 @@ using Backend.Models;
 using Backend.Plugins.ThresholdChecker;
 using Backend.Records;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Services;
 

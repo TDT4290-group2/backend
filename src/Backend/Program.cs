@@ -62,35 +62,33 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+var sensorService = app.Services.GetRequiredService<ISensorDataService>();
+
+sensorService.ThresholdExceeded += async (_, args) =>
+{
+    using var scope = app.Services.CreateScope();
+    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+    var notification = args.ToNotification();
+
+    var request = new NotificationRequestDto(
+        DataType: notification.dataType,
+        ExceedingLevel: notification.exceedingLevel,
+        Value: notification.value,
+        HappenedAt: notification.HappenedAt,
+        IsRead: notification.IsRead,
+        UserMessage: notification.userMessage
+    );
+
+    Console.WriteLine($"Notification triggered: {args.DataType} value {args.Value}");
+    await notificationService.CreateNotificationAsync(request);
+};
 
 using (var scope = app.Services.CreateScope())
 {
-    var sensorService = scope.ServiceProvider.GetRequiredService<ISensorDataService>();
-    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-    sensorService.ThresholdExceeded += async (_, args) =>
-    {
-        var notification = args.ToNotification();
-
-        var request = new NotificationRequestDto(
-            DataType: notification.dataType,
-            ExceedingLevel: notification.exceedingLevel,
-            Value: notification.value,
-            HappenedAt: notification.HappenedAt,
-            IsRead: notification.IsRead,
-            UserMessage: notification.userMessage
-        );
-        Console.WriteLine($"Notification triggered: {args.DataType} value {args.Value}");
-
-        await notificationService.CreateNotificationAsync(request);
-    };
-
-    // Optional: trigger processing of seeded sensor data
-    await sensorService.GenerateNotificationsFromSeededDataAsync();
+    var seedSensorService = scope.ServiceProvider.GetRequiredService<ISensorDataService>();
+    await seedSensorService.GenerateNotificationsFromSeededDataAsync();
 }
-
-
-//app.UseHttpsRedirection();
 
 await app.RunAsync();
 

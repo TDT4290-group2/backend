@@ -18,7 +18,6 @@ public class NotificationController(INotificationService notificationService, IH
     {
         return new NotificationResponseDto(
             notification.Id,
-            //notification.UserId,
             notification.exceedingLevel,
             notification.dataType,
             notification.value,
@@ -49,7 +48,7 @@ public class NotificationController(INotificationService notificationService, IH
     }
 
     [HttpGet("{dataType}")]
-    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetNotificationByDataType(string dataType)
+    public async Task<ActionResult<IEnumerable<NotificationResponseDto>>> GetNotificationByDataType([FromRoute] string dataType)
     {
         var notifications = await _notificationService.GetNotificationsByDataTypeAsync(dataType);
         if (notifications == null || !notifications.Any()) return NotFound();
@@ -58,8 +57,8 @@ public class NotificationController(INotificationService notificationService, IH
 
     [HttpGet("{dataType}/{happenedAt}")]
     public async Task<ActionResult<NotificationResponseDto>> GetNotificationByDataTypeAndDate(
-        string dataType,
-        DateTime happenedAt)
+        [FromRoute] string dataType,
+        [FromRoute] DateTime happenedAt)
     {
         var notification = await _notificationService.GetNotificationByDataTypeAndDateAsync(dataType, happenedAt);
         if (notification == null) return NotFound();
@@ -68,8 +67,8 @@ public class NotificationController(INotificationService notificationService, IH
 
     [HttpPut("{dataType}/{happenedAt}")]
     public async Task<ActionResult<NotificationResponseDto>> UpdateNotificationMessage(
-       string dataType,
-       DateTime happenedAt,
+       [FromRoute] string dataType,
+       [FromRoute] DateTime happenedAt,
        [FromBody] NotificationRequestDto request)
     {
         var notification = await _notificationService.UpdateNotificationMessageAsync(dataType, happenedAt, request);
