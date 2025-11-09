@@ -4,8 +4,6 @@ using Backend.Validation;
 using Backend.Observers;
 using Backend.Plugins.ThresholdChecker;
 using Backend.Hubs;
-using Backend.DTOs;
-using Backend.Events;
 using Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,20 +28,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ValidateFieldForDataTypeFilter>();
 builder.Services.AddScoped<INoteDataService, NoteDataService>();
-builder.Services.AddScoped<IThresholdObserver, ThresholdNotificationObserver>();
-builder.Services.AddScoped<IThresholdChecker>(sp => new ThresholdChecker(DataType.Noise));
-builder.Services.AddScoped<IThresholdChecker>(sp => new ThresholdChecker(DataType.Dust));
-builder.Services.AddScoped<IThresholdChecker>(sp => new ThresholdChecker(DataType.Vibration));
-
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
-builder.Services.AddScoped<ISensorDataService, SensorDataService>(sp =>
+builder.Services.AddSingleton<IThresholdObserver, ThresholdNotificationObserver>();
+builder.Services.AddSingleton<IThresholdChecker>(new ThresholdChecker(DataType.Noise));
+builder.Services.AddSingleton<IThresholdChecker>(new ThresholdChecker(DataType.Dust));
+builder.Services.AddSingleton<IThresholdChecker>(new ThresholdChecker(DataType.Vibration));
+builder.Services.AddSingleton<ISensorDataService>(sp =>
 {
-    var service = new SensorDataService(
-        sp.GetRequiredService<AppDbContext>(),
-        sp.GetRequiredService<IEnumerable<IThresholdChecker>>());
-
+    var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+    var thresholdCheckers = sp.GetRequiredService<IEnumerable<IThresholdChecker>>();
     var observer = sp.GetRequiredService<IThresholdObserver>();
+    var service = new SensorDataService(scopeFactory, thresholdCheckers);
     observer.Subscribe(service);
 
     return service;
@@ -62,32 +58,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-var sensorService = app.Services.GetRequiredService<ISensorDataService>();
-
-sensorService.ThresholdExceeded += async (_, args) =>
+using (var seedScope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
-    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
-    var notification = args.ToNotification();
-
-    var request = new NotificationRequestDto(
-        DataType: notification.dataType,
-        ExceedingLevel: notification.exceedingLevel,
-        Value: notification.value,
-        HappenedAt: notification.HappenedAt,
-        IsRead: notification.IsRead,
-        UserMessage: notification.userMessage
-    );
-
-    Console.WriteLine($"Notification triggered: {args.DataType} value {args.Value}");
-    await notificationService.CreateNotificationAsync(request);
-};
-
-using (var scope = app.Services.CreateScope())
-{
-    var seedSensorService = scope.ServiceProvider.GetRequiredService<ISensorDataService>();
-    await seedSensorService.GenerateNotificationsFromSeededDataAsync();
+    var sensorService = seedScope.ServiceProvider.GetRequiredService<ISensorDataService>();
+    await sensorService.GenerateNotificationsFromSeededDataAsync();
 }
 
 await app.RunAsync();

@@ -17,42 +17,45 @@ public interface ISensorDataService
 
 public class SensorDataService : ISensorDataService
 {
-    private readonly AppDbContext _context;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEnumerable<IThresholdChecker> _thresholdCheckers;
     public event EventHandler<ThresholdExceededEventArgs>? ThresholdExceeded;
 
     public SensorDataService(
-       AppDbContext context,
+       IServiceScopeFactory scopeFactory,
        IEnumerable<IThresholdChecker> thresholdCheckers)
     {
-        _context = context;
+        _scopeFactory = scopeFactory;
         _thresholdCheckers = thresholdCheckers;
     }
 
     public async Task GenerateNotificationsFromSeededDataAsync()
     {
-        var noiseData = await _context.NoiseData.ToListAsync();
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var noiseData = await context.NoiseData.ToListAsync();
         foreach (var data in noiseData)
         {
-            CheckThresholdAndNotify(data.LavgQ3, data.Id, DataType.Noise);
+            CheckThresholdAndNotify(data.LavgQ3, data.Id, DataType.Noise, data.Time);
         }
 
-        var dustData = await _context.DustData.ToListAsync();
+        var dustData = await context.DustData.ToListAsync();
         foreach (var data in dustData)
         {
-            CheckThresholdAndNotify(data.PM1S, data.Id, DataType.Dust);
+            CheckThresholdAndNotify(data.PM1S, data.Id, DataType.Dust, data.Time);
         }
 
-        var vibrationData = await _context.VibrationData.ToListAsync();
+        var vibrationData = await context.VibrationData.ToListAsync();
         foreach (var data in vibrationData)
         {
-            CheckThresholdAndNotify(data.Exposure, data.Id, DataType.Vibration);
+            CheckThresholdAndNotify(data.Exposure, data.Id, DataType.Vibration, data.ConnectedOn);
         }
     }
 
 
 
-    private void CheckThresholdAndNotify(double value, Guid userId, DataType dataType)
+    private void CheckThresholdAndNotify(double value, Guid userId, DataType dataType, DateTime happenedAt)
     {
         Console.WriteLine($"Checking {dataType} value {value} for user {userId}");
 
@@ -66,7 +69,7 @@ public class SensorDataService : ISensorDataService
                 exceedingLevel: checker.GetExceedingLevel(value),
                 dataType: dataType,
                 value: value,
-                happenedAt: DateTime.UtcNow
+                happenedAt: happenedAt
             );
             OnThresholdExceeded(eventArgs);
         }
@@ -79,11 +82,15 @@ public class SensorDataService : ISensorDataService
 
     public async Task<IEnumerable<NoiseData>> GetAllNoiseDataAsync()
     {
-        return await _context.NoiseData.ToListAsync();
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await context.NoiseData.ToListAsync();
     }
 
     public async Task<IEnumerable<SensorDataResponseDto>> GetAggregatedDataAsync(RequestContext requestContext)
     {
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var request = requestContext.Request ?? throw new ArgumentException("Request is not initialized.");
         var dataType = requestContext.DataType ?? throw new ArgumentException("DataType is not initialized.");
         var userId = requestContext.UserId ?? throw new ArgumentException("UserId is not initialized.");
@@ -125,7 +132,7 @@ public class SensorDataService : ISensorDataService
             WHERE bucket >= {{0}} AND bucket <= {{1}}
             ORDER BY bucket";
 
-        var result = await _context.Database
+        var result = await context.Database
             .SqlQueryRaw<SensorDataResponseDto>(sql, startTime, endTime)
             .ToListAsync();
 
@@ -136,7 +143,7 @@ public class SensorDataService : ISensorDataService
 
         foreach (var data in result)
         {
-            CheckThresholdAndNotify(data.Value, userId, dataType);
+            CheckThresholdAndNotify(data.Value, userId, dataType, data.Time);
         }
 
         return result;

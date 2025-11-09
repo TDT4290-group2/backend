@@ -1,21 +1,18 @@
 using Backend.DTOs;
 using Backend.Events;
 using Backend.Models;
-using Backend.Observers;
 using Backend.Services;
-using Microsoft.AspNetCore.SignalR;
-using Backend.Hubs;
 
 namespace Backend.Observers;
 
 public class ThresholdNotificationObserver : IThresholdObserver
 {
-    private readonly INotificationService _notificationService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly List<ISensorDataService> _observables = new();
 
-    public ThresholdNotificationObserver(INotificationService notificationService)
+    public ThresholdNotificationObserver(IServiceScopeFactory scopeFactory)
     {
-        _notificationService = notificationService;
+        _scopeFactory = scopeFactory;
     }
 
     public void Subscribe(ISensorDataService observable)
@@ -38,16 +35,21 @@ public class ThresholdNotificationObserver : IThresholdObserver
 
     private async void HandleThresholdExceeded(object? sender, ThresholdExceededEventArgs e)
     {
+        using var scope = _scopeFactory.CreateScope();
+        var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
         var notification = e.ToNotification();
+
         var notificationDto = new NotificationRequestDto(
-            notification.dataType,
-            notification.exceedingLevel,
-            notification.value,
-            notification.HappenedAt,
-            notification.IsRead,
-            notification.userMessage
+            DataType: notification.dataType,
+            ExceedingLevel: notification.exceedingLevel,
+            Value: notification.value,
+            HappenedAt: notification.HappenedAt,
+            IsRead: notification.IsRead,
+            UserMessage: notification.userMessage
         );
-        await _notificationService.CreateNotificationAsync(notificationDto);
+
+        await notificationService.CreateNotificationAsync(notificationDto);
     }
 
     public void Dispose()
