@@ -53,3 +53,6 @@ publish/
 
 # Csv files
 *.csv
+
+# Environment files
+.env
