@@ -15,8 +15,8 @@ public static class SensorThresholds //Thresholds are set as readonly for the pr
 
     public static class Dust
     {
-        public static readonly double WarningThreshold = 80.0; // μg/m³
-        public static readonly double DangerThreshold = 100.0; // μg/m³
+        public static readonly double WarningThreshold = 15.0; // μg/m³
+        public static readonly double DangerThreshold = 30.0; // μg/m³
     }
 
     public static class Vibration
