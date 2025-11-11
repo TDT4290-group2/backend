@@ -374,6 +374,7 @@ CREATE INDEX idx_dust_minutely_bucket ON dust_data_minutely(bucket);
 CREATE INDEX idx_dust_hourly_bucket ON dust_data_hourly(bucket);
 CREATE INDEX idx_dust_daily_bucket ON dust_data_daily(bucket);
 
+-- ...existing code...
 
 -- USER DATA
 DELETE FROM "User";
