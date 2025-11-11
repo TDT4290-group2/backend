@@ -6,12 +6,10 @@ This repository contains the backend code for the HealthTech application, which 
 - [HealthTech backend](#healthtech-backend)
   - [Table of Contents](#table-of-contents)
   - [Requirements](#requirements)
-  - [Setting up the backend and DB](#setting-up-the-backend-and-db)
-    - [Locally](#locally)
-    - [Docker](#docker)
-  - [Updating the DB](#updating-the-db)
-  - [Setting up docker](#setting-up-docker)
-  - [Seeding the Database with sample data](#seeding-the-database-with-sample-data)
+  - [Setup](#setup)
+    - [Running backend in Docker](#running-backend-in-docker)
+    - [Running backend outside Docker](#running-backend-outside-docker)
+    - [Seeding the Database with sample data](#seeding-the-database-with-sample-data)
   - [Running tests](#running-tests)
   - [Endpoints](#endpoints)
   - [Hypertables](#hypertables)
@@ -20,40 +18,50 @@ This repository contains the backend code for the HealthTech application, which 
 
 
 ## Requirements
-This project requires .NET 9.0.x
+This project requires .NET 9.0.x for development
 
+## Setup
+The are two ways of running the backend; in docker or outside docker. The simplest is in docker. For development, it is recommended to run outside docker. **No matter which approach, you still need docker installed on your machine to run the database.**
 
-## Setting up the backend and DB
-### Locally
-You can either run the application locally by commenting out this section in docker-compose.yml
+### Running backend in Docker
+
+#### Set up environment variables
+Make a copy of the [.env.example](./.env.example) file and rename the new file to *.env*. Remember to change the default password.
+
+#### Run the compose stack
+Run this command in the terminal from the root directory
+```sh
+docker compose up --build -d
 ```
-dotnet_app:
+
+Now you can [seed the database](#seeding-the-database-with-sample-data)
+
+### Running backend outside Docker
+NB: Requires .NET 9.0.x installed locally
+
+You can run the application without docker by commenting out this section in [the docker-compose file](./docker-compose.yml)
+```
+  dotnet_app:
     build:
       context: ./src/Backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "${DOTNET_APP_PORT:-5063}:8080"
     environment:
-      ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=5432;Database=mydb;Username=postgres;Password=postgres"
+      ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=${POSTGRES_PORT:-5432};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      AllowedHost: ${ALLOWED_HOST}
     container_name: dotnet_app
     depends_on:
-      - timescaledb
-
+      timescaledb:
+        condition: service_healthy
 ```
-and then set up docker by following the steps in [setting up docker](#setting-up-docker).
 
-Then navigate to /src/Backend and run this if the **Migrations folder doesn´t exist**
+Then start the rest of the compose stack from the root directory with
 ```sh
-dotnet ef migrations add InitialCreate
-dotnet ef database update
+docker compose up --build -d
 ```
 
-If the **Migrations folder exist** run this
-```sh
-dotnet ef database update
-```
-
-Then you have to run
+Lastly, navigate to *src/Backend/* and run
 ```sh
 dotnet run
 ```
@@ -63,43 +71,17 @@ or if you want to enable hot reload run
 dotnet watch run
 ```
 
-### Docker
-Run this command in the terminal from the root
-```sh
-docker compose up --build -d
-```
+Now you can [seed the database](#seeding-the-database-with-sample-data)
 
-Then navigate to /src/Backend and run this if the **Migrations folder doesn´t exist**
-```sh
-dotnet ef migrations add InitialCreate
-dotnet ef database update
-```
-
-If the **Migrations folder exist** run this
-```sh
-dotnet ef database update
-```
-
-## Updating the DB
-If you add new tables or change an already existing table you have to run this command
-```sh
-dotnet ef migrations add <name of migration>
-dotnet ef database update
-```
-
-## Setting up docker
-Run the command under in the terminal from root:
-```sh
-docker compose up --build -d
-```
-
-## Seeding the Database with sample data
+### Seeding the Database with sample data
 First, place your sample data in the *seed* directory as csv-files: *NoiseData.csv*, *DustData.csv*, *VibrationData.csv*
 Then run 
 
 ```sh
 docker exec -it timescaledb psql -U postgres -d mydb -f /seed/seed.sql
 ```
+
+Now your application is ready! You can open it at http://localhost:8080
 
 ## Running tests
 From the root directory, run 
@@ -108,7 +90,7 @@ dotnet test
 ```
 
 ## Endpoints
-The endpoint is
+The default backend base URL is
 ```
 http://localhost:5063
 ```
