@@ -12,7 +12,6 @@ public class AppDbContext : DbContext
 
     public DbSet<NoteData> NoteData { get; set; }
     public DbSet<User> User { get; set; }
-    public DbSet<Notification> Notification { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -126,35 +126,6 @@ namespace backend.Migrations
                     b.ToTable("NoiseData");
                 });
 
-            modelBuilder.Entity("Backend.Records.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("HappenedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool?>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("dataType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("exceedingLevel")
-                        .HasColumnType("text");
-
-                    b.Property<string>("userMessage")
-                        .HasColumnType("text");
-
-                    b.Property<double?>("value")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Notification");
-                });
-
             modelBuilder.Entity("Backend.Records.VibrationData", b =>
                 {
                     b.Property<Guid>("Id")
