@@ -3,28 +3,43 @@ services:
     image: timescale/timescaledb:latest-pg17
     container_name: timescaledb
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - timescale_data:/var/lib/postgresql/data
       - ./seed:/seed
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Comment out the following section if you want to use a local .NET application instead
-  # dotnet_app:
-  #   build:
-  #     context: ./src/Backend
-  #     dockerfile: Dockerfile
+  dotnet_app:
+    build:
+      context: ./src/Backend
+      dockerfile: Dockerfile
+    ports:
+      - "${DOTNET_APP_PORT:-5063}:8080"
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=${POSTGRES_PORT:-5432};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      AllowedHost: ${ALLOWED_HOST}
+    container_name: dotnet_app
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
+  # frontend:
+  #   image: ghcr.io/tdt4290-group2/frontend:main
+  #   container_name: frontend
   #   ports:
-  #     - "5063:8080"
-  #   environment:
-  #     ConnectionStrings__DefaultConnection: "Host=timescaledb;Port=5432;Database=mydb;Username=postgres;Password=postgres"
-  #   container_name: dotnet_app
+  #     - "8080:3000"
   #   depends_on:
+  #     - dotnet_app
   #     - timescaledb
     
-
 volumes:
   timescale_data:
