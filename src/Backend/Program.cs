@@ -15,13 +15,16 @@ builder.Services.AddCors(options =>
         {
             policy.SetIsOriginAllowed(origin =>
             {
+
+                var uri = new Uri(origin);
+                var host = uri.Host;
+
                 // Allow localhost for development
-                if (origin == "http://localhost:5173")
+                if (host == "localhost" || host == "127.0.0.1")
                     return true;
 
                 // Allow configured host and its subdomains
-                var uri = new Uri(origin);
-                if (uri.Host == allowedHost || uri.Host.EndsWith($".{allowedHost}"))
+                if (host == allowedHost || host.EndsWith($".{allowedHost}"))
                     return true;
 
                 return false;
