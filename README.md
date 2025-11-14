@@ -21,6 +21,8 @@ This repository contains the backend code for the HealthTech application, which 
 This project requires .NET 9.0.x for development
 
 ## Setup
+The simplest way to run the full HealthTech application is from the [frontend repository](https://github.com/TDT4290-group2/frontend). **These are instructions for running the backend separately**.
+
 The are two ways of running the backend; in docker or outside docker. The simplest is in docker. For development, it is recommended to run outside docker. **No matter which approach, you still need docker installed on your machine to run the database.**
 
 ### Running backend in Docker
@@ -75,11 +77,15 @@ Now you can [seed the database](#seeding-the-database-with-sample-data)
 
 ### Seeding the Database with sample data
 First, place your sample data in the *seed* directory as csv-files: *NoiseData.csv*, *DustData.csv*, *VibrationData.csv*
-Then run 
+Sample data for the different exposure types can be found [here](https://drive.proton.me/urls/FYRKP45DT8#CyS2vd2gzQHH).
+
+After the data is placed, run 
 
 ```sh
 docker exec -it timescaledb psql -U postgres -d mydb -f /seed/seed.sql
 ```
+
+Note that you need to change the postgres user from *postgres* and database from *mydb* if you changed the default values from `.env.example`
 
 Now your application is ready! You can open it at http://localhost:8080
 
